@@ -72,8 +72,8 @@ def generate_card():
     # Adjusted Y positions for visual alignment
     name_y_ar = 80
     title_y_ar = 130
-    name_y_en = 85      # +5px to align visually
-    title_y_en = 135    # +5px to align visually
+    name_y_en = 90      # +5px to align visually
+    title_y_en = 140    # +5px to align visually
 
     # Arabic (right-aligned)
     draw.text((950, name_y_ar), reshape_arabic(name_ar), font=font_name_ar, fill=text_color, anchor="ra")
