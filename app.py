@@ -15,7 +15,7 @@ QR_SIZE = 600
 ICON_GAP = 60
 CONTACT_LINE_HEIGHT = 100
 TEXT_LINE_GAP = 40
-AUTO_GAP = 20
+AUTO_GAP = 60
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -85,8 +85,8 @@ def generate_front(width, height, fonts):
     title_ar_box = fonts["ar_title"].getbbox(title_ar_text)
     title_ar_height = title_ar_box[3] - title_ar_box[1]
 
-    name_en_y = MARGIN - 40  # Move English name higher
-    name_ar_y = MARGIN - 40  # Move Arabic name higher
+    name_en_y = MARGIN - 40
+    name_ar_y = MARGIN - 40
     title_en_y = name_en_y + name_en_height + AUTO_GAP
     title_ar_y = name_ar_y + name_ar_height + AUTO_GAP
 
