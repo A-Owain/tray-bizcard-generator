@@ -35,8 +35,8 @@ def load_font(path, size):
     return ImageFont.truetype(path, size)
 
 # --- ASSETS ---
-icon_email = load_img("assets/icons/email.png", (96, 96))
-icon_phone = load_img("assets/icons/phone.png", (96, 96))
+icon_email = load_img("assets/icons/email_96.png", (96, 96))
+icon_phone = load_img("assets/icons/phone_96.png", (96, 96))
 qr_code = load_img("assets/qr_code.png")
 logo_back = load_img("assets/Tray_logo_white.png")
 
