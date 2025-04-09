@@ -14,6 +14,7 @@ RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
 LINE_SPACING = 180
 ICON_GAP = 60
+CONTACT_LINE_GAP = 60
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -83,10 +84,10 @@ def generate_front(width, height, fonts):
     text_height = email_bbox[3] - email_bbox[1]
     text_offset = (icon_email.size[1] - text_height) // 2
 
-    draw.text((MARGIN + 64 + ICON_GAP, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 64 + ICON_GAP, contact_y + 100 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 96 + ICON_GAP, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 96 + ICON_GAP, contact_y + CONTACT_LINE_GAP + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
-    card.paste(icon_phone, (MARGIN, contact_y + 100), mask=icon_phone)
+    card.paste(icon_phone, (MARGIN, contact_y + CONTACT_LINE_GAP), mask=icon_phone)
 
     # Bottom Right (QR)
     qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
@@ -95,7 +96,7 @@ def generate_front(width, height, fonts):
 
 def generate_back(width, height):
     card = Image.new("RGB", (width, height), RED_COLOR)
-    logo = ImageOps.contain(logo_back, (300, 300))
+    logo = ImageOps.contain(logo_back, (600, 600))
     card.paste(logo, ((width - logo.width)//2, (height - logo.height)//2), mask=logo)
     return card
 
