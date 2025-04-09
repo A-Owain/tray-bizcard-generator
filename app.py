@@ -10,7 +10,7 @@ st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
 
 # Try loading logo
 try:
-    logo = Image.open("assets/tray_logo.png").resize((67.56, 120))
+    logo = Image.open("assets/tray_logo.png").resize((120, 120))
 except FileNotFoundError:
     st.warning("⚠️ TRAY logo not found in /assets. Please add tray_logo.png to that folder.")
     logo = Image.new("RGB", (120, 120), "gray")  # placeholder
