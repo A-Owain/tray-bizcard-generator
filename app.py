@@ -69,19 +69,21 @@ def generate_card():
     card = Image.new("RGB", (W, H), color=bg_color)
     draw = ImageDraw.Draw(card)
 
-    # Vertical alignment
-    name_y = 80
-    title_y = 130
+    # Adjusted Y positions for visual alignment
+    name_y_ar = 80
+    title_y_ar = 130
+    name_y_en = 85      # +5px to align visually
+    title_y_en = 135    # +5px to align visually
 
     # Arabic (right-aligned)
-    draw.text((950, name_y), reshape_arabic(name_ar), font=font_name_ar, fill=text_color, anchor="ra")
-    draw.text((950, title_y), reshape_arabic(title_ar), font=font_title_ar, fill=text_color, anchor="ra")
+    draw.text((950, name_y_ar), reshape_arabic(name_ar), font=font_name_ar, fill=text_color, anchor="ra")
+    draw.text((950, title_y_ar), reshape_arabic(title_ar), font=font_title_ar, fill=text_color, anchor="ra")
 
     # English (left-aligned)
-    draw.text((50, name_y), name_en, font=font_name_en, fill=text_color)
-    draw.text((50, title_y), title_en, font=font_title_en, fill=text_color)
+    draw.text((50, name_y_en), name_en, font=font_name_en, fill=text_color)
+    draw.text((50, title_y_en), title_en, font=font_title_en, fill=text_color)
 
-    # Contact section with icons
+    # Contact info
     icon_x = 50
     text_x = 90
     email_y = 395
@@ -93,7 +95,7 @@ def generate_card():
     draw.text((text_x, email_y), email, font=font_info_en, fill=text_color)
     draw.text((text_x, phone_y), phone, font=font_info_en, fill=text_color)
 
-    # Centered logo
+    # Center logo
     card.paste(logo, (440, 240), mask=logo)
 
     return card
