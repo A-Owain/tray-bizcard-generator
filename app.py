@@ -87,8 +87,12 @@ def generate_front(width, height, fonts):
 
     draw.text((MARGIN + 96 + ICON_GAP, email_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
     draw.text((MARGIN + 96 + ICON_GAP, phone_y), phone, font=fonts["en_info"], fill=TEXT_COLOR)
-    card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
-    card.paste(icon_phone, (MARGIN, contact_y + CONTACT_LINE_HEIGHT), mask=icon_phone)
+
+    icon_email_y = email_y + email_height // 2 - icon_email.height // 2
+    icon_phone_y = phone_y + email_height // 2 - icon_phone.height // 2
+
+    card.paste(icon_email, (MARGIN, icon_email_y), mask=icon_email)
+    card.paste(icon_phone, (MARGIN, icon_phone_y), mask=icon_phone)
 
     # Bottom Right (QR)
     qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
