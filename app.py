@@ -74,11 +74,11 @@ def generate_front(width, height, fonts):
     draw.text((MARGIN, MARGIN + LINE_SPACING), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
 
     # Top Right (AR) – Slight upward adjustment for baseline alignment
-    draw.text((width - MARGIN, MARGIN - 10), reshape_arabic(name_ar), font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
-    draw.text((width - MARGIN, MARGIN + LINE_SPACING - 10), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
+    draw.text((width - MARGIN, MARGIN - 30), reshape_arabic(name_ar), font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
+    draw.text((width - MARGIN, MARGIN + LINE_SPACING - 30), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
 
-    # Bottom Left (Contact Info) – Slight upward shift
-    contact_y = height - MARGIN - 2 * CONTACT_LINE_HEIGHT - 40
+    # Bottom Left (Contact Info) – Slight downward shift
+    contact_y = height - MARGIN - 2 * CONTACT_LINE_HEIGHT + 30
     email_box = fonts["en_info"].getbbox(email)
     email_height = email_box[3] - email_box[1]
 
