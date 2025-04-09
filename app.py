@@ -1,154 +1,130 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
-import arabic_reshaper
-from bidi.algorithm import get_display
+import os
 
-st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
-
-# --- CONFIG ---
+# === Constants ===
+CM = 118.11  # pixels per cm for 300 DPI
+WIDTH_CM = 9
+HEIGHT_CM = 5
+W_PRINT = int(WIDTH_CM * CM)
+H_PRINT = int(HEIGHT_CM * CM)
+W_4K = 3840
+H_4K = 2160
 MARGIN = 150
-BG_COLOR = "white"
-TEXT_COLOR = "#002C5F"
-RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
-ICON_GAP = 60
-CONTACT_LINE_HEIGHT = 240
-TEXT_LINE_GAP = 60
-AUTO_GAP = 60
 ICON_SIZE = (96, 96)
+ICON_GAP = 40
+CONTACT_SPACING = 120
 
-# --- LOADERS ---
-def reshape_arabic(text):
-    return get_display(arabic_reshaper.reshape(text))
+# === Colors ===
+COLOR_PRIMARY = "#0f2c5d"
+COLOR_ACCENT = "#ea2f2f"
+BG_COLOR = "white"
 
-def load_img(path, size=None):
-    try:
-        img = Image.open(path).convert("RGBA")
-        if size:
-            img = img.resize(size, Image.LANCZOS)
-        return img
-    except Exception as e:
-        print(f"Error loading image {path}: {e}")
-        return Image.new("RGBA", size or (40, 40), "gray")
+# === Paths ===
+FONT_AR_BOLD = "assets/fonts/NotoSansArabic-SemiBold.ttf"
+FONT_AR_REGULAR = "assets/fonts/NotoSansArabic-Regular.ttf"
+FONT_EN_BOLD = "assets/fonts/PlusJakartaSans-Bold.ttf"
+FONT_EN_REGULAR = "assets/fonts/PlusJakartaSans-Medium.ttf"
+LOGO_QR = "assets/icons/qr_code.png"
+ICON_EMAIL = "assets/icons/email.png"
+ICON_PHONE = "assets/icons/phone.png"
 
-def load_font(path, size):
-    return ImageFont.truetype(path, size)
-
-# --- ASSETS ---
-icon_email = load_img("assets/icons/email.png", ICON_SIZE)
-icon_phone = load_img("assets/icons/phone.png", ICON_SIZE)
-qr_code = load_img("assets/icons/qr_code.png")
-logo_back = load_img("assets/icons/Tray_logo_white.png")
-
-font_ar_bold = "fonts/NotoSansArabic-SemiBold.ttf"
-font_ar_reg = "fonts/NotoSansArabic-Regular.ttf"
-font_en_bold = "fonts/PlusJakartaSans-Bold.ttf"
-font_en_med = "fonts/PlusJakartaSans-Medium.ttf"
-
-def load_fonts(scale=1.0):
+# === Load fonts ===
+def load_fonts(scale=1):
     return {
-        "ar_name": load_font(font_ar_bold, int(110 * scale)),
-        "ar_title": load_font(font_ar_reg, int(70 * scale)),
-        "en_name": load_font(font_en_bold, int(110 * scale)),
-        "en_title": load_font(font_en_med, int(70 * scale)),
-        "en_info": load_font(font_en_med, int(80 * scale)),
+        "ar_name": ImageFont.truetype(FONT_AR_BOLD, int(130 * scale)),
+        "ar_title": ImageFont.truetype(FONT_AR_REGULAR, int(72 * scale)),
+        "en_name": ImageFont.truetype(FONT_EN_BOLD, int(130 * scale)),
+        "en_title": ImageFont.truetype(FONT_EN_REGULAR, int(72 * scale)),
+        "en_info": ImageFont.truetype(FONT_EN_REGULAR, int(60 * scale))
     }
 
-# --- SIDEBAR ---
-with st.sidebar:
-    st.title("🪪 معلومات البطاقة")
-    name_ar = st.text_input("الاسم بالعربية", "عبدالله رجب")
-    title_ar = st.text_input("المسمى بالعربية", "مدير تطوير الأعمال")
-    name_en = st.text_input("Full Name", "Abdullah Rajab")
-    title_en = st.text_input("Job Title", "Business Development Manager")
-    email = st.text_input("Email", "abdullah.rajab@alraedahdigital.sa")
-    phone = st.text_input("Phone", "+966 59 294 8994")
+# === Load icon ===
+def load_img(path, size):
+    img = Image.open(path).convert("RGBA")
+    return img.resize(size, Image.ANTIALIAS)
 
-# --- GENERATOR ---
-def generate_front(width, height, fonts):
-    card = Image.new("RGB", (width, height), BG_COLOR)
-    draw = ImageDraw.Draw(card)
+# === Generate Front ===
+def generate_front(canvas_width, canvas_height, fonts):
+    canvas = Image.new("RGB", (canvas_width, canvas_height), BG_COLOR)
+    draw = ImageDraw.Draw(canvas)
 
-    # Names and titles
-    name_ar_text = reshape_arabic(name_ar)
-    title_ar_text = reshape_arabic(title_ar)
+    # Inputs
+    ar_name = st.session_state.get("ar_name", "عبدالله رجب")
+    ar_title = st.session_state.get("ar_title", "مدير تطوير الأعمال")
+    en_name = st.session_state.get("en_name", "Abdullah Rajab")
+    en_title = st.session_state.get("en_title", "Business Development Manager")
+    email = st.session_state.get("email", "abdullah.rajab@alraedahdigital.sa")
+    phone = st.session_state.get("phone", "+966 59 294 8994")
 
-    name_en_box = fonts["en_name"].getbbox(name_en)
-    name_en_height = name_en_box[3] - name_en_box[1]
+    # --- Top Left ---
+    draw.text((MARGIN, MARGIN), en_name, font=fonts["en_name"], fill=COLOR_PRIMARY)
+    draw.text((MARGIN, MARGIN + fonts["en_name"].getsize(en_name)[1] + 10), en_title, font=fonts["en_title"], fill=COLOR_PRIMARY)
 
-    name_ar_box = fonts["ar_name"].getbbox(name_ar_text)
-    name_ar_height = name_ar_box[3] - name_ar_box[1]
+    # --- Top Right ---
+    ar_name_size = fonts["ar_name"].getsize(ar_name)
+    ar_title_size = fonts["ar_title"].getsize(ar_title)
+    x_ar = canvas_width - MARGIN - max(ar_name_size[0], ar_title_size[0])
+    y_ar = MARGIN + 20  # tweak to align with English name
+    draw.text((x_ar, y_ar), ar_name, font=fonts["ar_name"], fill=COLOR_PRIMARY)
+    draw.text((x_ar, y_ar + ar_name_size[1] + 10), ar_title, font=fonts["ar_title"], fill=COLOR_PRIMARY)
 
-    title_en_box = fonts["en_title"].getbbox(title_en)
-    title_en_height = title_en_box[3] - title_en_box[1]
+    # --- Bottom Right (QR) ---
+    qr = load_img(LOGO_QR, (QR_SIZE, QR_SIZE))
+    canvas.paste(qr, (canvas_width - MARGIN - QR_SIZE, canvas_height - MARGIN - QR_SIZE), qr)
 
-    title_ar_box = fonts["ar_title"].getbbox(title_ar_text)
-    title_ar_height = title_ar_box[3] - title_ar_box[1]
+    # --- Bottom Left (Contact Info) ---
+    icon_email = load_img(ICON_EMAIL, ICON_SIZE)
+    icon_phone = load_img(ICON_PHONE, ICON_SIZE)
 
-    name_en_y = MARGIN
-    name_ar_y = MARGIN
-    title_en_y = name_en_y + name_en_height + AUTO_GAP
-    title_ar_y = name_ar_y + name_ar_height + AUTO_GAP
+    email_text_height = fonts["en_info"].getsize(email)[1]
+    phone_text_height = fonts["en_info"].getsize(phone)[1]
+    email_text_offset = (ICON_SIZE[1] - email_text_height) // 2
+    phone_text_offset = (ICON_SIZE[1] - phone_text_height) // 2
 
-    draw.text((MARGIN, name_en_y), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
-    draw.text((width - MARGIN, name_ar_y), name_ar_text, font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
+    x_contact = MARGIN
+    y_email = canvas_height - MARGIN - ICON_SIZE[1] * 2 - CONTACT_SPACING
+    y_phone = y_email + ICON_SIZE[1] + CONTACT_SPACING
 
-    draw.text((MARGIN, title_en_y), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
-    draw.text((width - MARGIN, title_ar_y), title_ar_text, font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
+    # Email line
+    canvas.paste(icon_email, (x_contact, y_email), mask=icon_email)
+    draw.text((x_contact + ICON_SIZE[0] + ICON_GAP, y_email + email_text_offset), email, font=fonts["en_info"], fill=COLOR_PRIMARY)
 
-    # Bottom Right (QR)
-    qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
-    qr_bottom_y = height - MARGIN
+    # Phone line
+    canvas.paste(icon_phone, (x_contact, y_phone), mask=icon_phone)
+    draw.text((x_contact + ICON_SIZE[0] + ICON_GAP, y_phone + phone_text_offset), phone, font=fonts["en_info"], fill=COLOR_PRIMARY)
 
-    # Bottom Left (Contact Info)
-    contact_y = qr_bottom_y - (2 * CONTACT_LINE_HEIGHT)
+    return canvas
 
-    text_height_email = fonts["en_info"].getbbox(email)[3] - fonts["en_info"].getbbox(email)[1]
-    text_height_phone = fonts["en_info"].getbbox(phone)[3] - fonts["en_info"].getbbox(phone)[1]
-
-    text_y_email = contact_y + CONTACT_LINE_HEIGHT - text_height_email
-    text_y_phone = contact_y + (2 * CONTACT_LINE_HEIGHT) - text_height_phone
-
-    icon_y_email = contact_y + CONTACT_LINE_HEIGHT - ICON_SIZE[1]
-    icon_y_phone = contact_y + (2 * CONTACT_LINE_HEIGHT) - ICON_SIZE[1]
-
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_email), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_phone), phone, font=fonts["en_info"], fill=TEXT_COLOR)
-
-    card.paste(icon_email, (MARGIN, icon_y_email), mask=icon_email)
-    card.paste(icon_phone, (MARGIN, icon_y_phone), mask=icon_phone)
-
-    card.paste(qr_scaled, (width - MARGIN - qr_scaled.width, qr_bottom_y - qr_scaled.height), mask=qr_scaled)
-    return card
-
-def generate_back(width, height):
-    card = Image.new("RGB", (width, height), RED_COLOR)
-    logo = ImageOps.contain(logo_back, (1300, 1300))
-    card.paste(logo, ((width - logo.width)//2, (height - logo.height)//2), mask=logo)
-    return card
-
-# --- SIZES ---
-W_4K, H_4K = 3840, 2160
-W_PRINT, H_PRINT = 1062, 591
-
-fonts_4k = load_fonts(1.0)
-fonts_print = load_fonts(1.5)
-
-front_4k = generate_front(W_4K, H_4K, fonts_4k)
-back_4k = generate_back(W_4K, H_4K)
-
-front_print = generate_front(W_PRINT, H_PRINT, fonts_print)
-back_print = generate_back(W_PRINT, H_PRINT)
-
-# --- DISPLAY + EXPORT ---
-st.subheader("🔍 Preview (Front)")
-st.image(front_4k.resize((1200, 675)))
-
-def export_pdf(front, back, name):
+# === Save to PDF ===
+def save_as_pdf(img):
     buf = io.BytesIO()
-    front.convert("RGB").save(buf, format="PDF", save_all=True, append_images=[back.convert("RGB")])
-    st.download_button(f"⬇️ {name}", buf.getvalue(), file_name=name, mime="application/pdf")
+    img.save(buf, format="PDF", resolution=300.0)
+    return buf
 
-export_pdf(front_4k, back_4k, "tray_card_4K.pdf")
-export_pdf(front_print, back_print, "tray_card_print.pdf")
+# === Streamlit UI ===
+st.set_page_config(layout="wide")
+st.title("📇 Preview (Front)")
+
+with st.sidebar:
+    st.header("📸 معلومات البطاقة")
+    st.text_input("الاسم بالعربية", "عبدالله رجب", key="ar_name")
+    st.text_input("المسمى بالعربية", "مدير تطوير الأعمال", key="ar_title")
+    st.text_input("Full Name", "Abdullah Rajab", key="en_name")
+    st.text_input("Job Title", "Business Development Manager", key="en_title")
+    st.text_input("Email", "abdullah.rajab@alraedahdigital.sa", key="email")
+    st.text_input("Phone", "+966 59 294 8994", key="phone")
+
+fonts_4k = load_fonts(scale=1.0)
+front_4k = generate_front(W_4K, H_4K, fonts_4k)
+buf_4k = save_as_pdf(front_4k)
+st.download_button("📥 tray_card_4K.pdf", data=buf_4k, file_name="tray_card_4K.pdf")
+
+fonts_print = load_fonts(scale=W_PRINT / W_4K)
+front_print = generate_front(W_PRINT, H_PRINT, fonts_print)
+buf_print = save_as_pdf(front_print)
+st.download_button("📥 tray_card_print.pdf", data=buf_print, file_name="tray_card_print.pdf")
+
+st.image(front_4k, caption="Preview", use_column_width=True)
