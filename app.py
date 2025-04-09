@@ -32,7 +32,7 @@ def load_font(path, size):
 icon_email = load_img("assets/icons/email.png", (48, 48))
 icon_phone = load_img("assets/icons/phone.png", (48, 48))
 qr_code = load_img("assets/qr_code.png", (200, 200))
-logo_back = load_img("assets/Tray_logo_white.png")
+logo_back = load_img("assets/tray_logo_white.png")
 
 font_ar_bold = "fonts/NotoSansArabic-SemiBold.ttf"
 font_ar_reg = "fonts/NotoSansArabic-Regular.ttf"
