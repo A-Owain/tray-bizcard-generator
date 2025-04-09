@@ -23,8 +23,8 @@ except FileNotFoundError:
 
 # Load icons
 try:
-    icon_email = Image.open("assets/icons/email.png").convert("RGBA").resize((28, 28))
-    icon_phone = Image.open("assets/icons/phone.png").convert("RGBA").resize((28, 28))
+    icon_email = Image.open("/icons/email.png").convert("RGBA").resize((28, 28))
+    icon_phone = Image.open("/icons/phone.png").convert("RGBA").resize((28, 28))
 except FileNotFoundError:
     st.warning("⚠️ Icons not found in /assets/icons. Please make sure email.png and phone.png exist.")
     icon_email = Image.new("RGBA", (28, 28), "gray")
