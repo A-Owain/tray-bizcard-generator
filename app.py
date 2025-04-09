@@ -83,7 +83,7 @@ def generate_front(width, height, fonts):
     title_ar_height = title_ar_box[3] - title_ar_box[1]
 
     name_en_y = MARGIN
-    name_ar_y = MARGIN
+    name_ar_y = MARGIN - 30
     title_en_y = name_en_y + name_en_height + AUTO_GAP
     title_ar_y = title_en_y + title_en_height - title_ar_height
 
