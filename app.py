@@ -73,7 +73,12 @@ def generate_front(width, height, fonts):
 
     # Bottom Left (Contact Info)
     contact_y = height - MARGIN - 150
-    text_offset = (icon_email.size[1] - fonts["en_info"].getsize(email)[1]) // 2
+    dummy_img = Image.new("RGB", (10, 10))
+    dummy_draw = ImageDraw.Draw(dummy_img)
+    email_bbox = dummy_draw.textbbox((0, 0), email, font=fonts["en_info"])
+    text_height = email_bbox[3] - email_bbox[1]
+    text_offset = (icon_email.size[1] - text_height) // 2
+
     draw.text((MARGIN + 60, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
     draw.text((MARGIN + 60, contact_y + 80 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
