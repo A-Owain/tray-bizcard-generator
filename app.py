@@ -24,7 +24,8 @@ def load_img(path, size=None):
         if size:
             img = img.resize(size, Image.ANTIALIAS)
         return img
-    except:
+    except Exception as e:
+        print(f"Error loading image {path}: {e}")
         return Image.new("RGBA", size or (40, 40), "gray")
 
 def load_font(path, size):
@@ -47,7 +48,7 @@ def load_fonts(scale=1.0):
         "ar_title": load_font(font_ar_reg, int(90 * scale)),
         "en_name": load_font(font_en_bold, int(110 * scale)),
         "en_title": load_font(font_en_med, int(90 * scale)),
-        "en_info": load_font(font_en_med, int(75 * scale)),
+        "en_info": load_font(font_en_med, int(80 * scale)),
     }
 
 # --- SIDEBAR ---
@@ -81,8 +82,8 @@ def generate_front(width, height, fonts):
     text_height = email_bbox[3] - email_bbox[1]
     text_offset = (icon_email.size[1] - text_height) // 2
 
-    draw.text((MARGIN + 70, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 70, contact_y + 100 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 80, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 80, contact_y + 100 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
     card.paste(icon_phone, (MARGIN, contact_y + 100), mask=icon_phone)
 
