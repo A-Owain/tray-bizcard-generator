@@ -11,8 +11,8 @@ MARGIN = 150
 BG_COLOR = "white"
 TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
-QR_SIZE = 200
-LINE_SPACING = 100
+QR_SIZE = 600
+LINE_SPACING = 130
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -31,8 +31,8 @@ def load_font(path, size):
     return ImageFont.truetype(path, size)
 
 # --- ASSETS ---
-icon_email = load_img("assets/icons/email.png", (48, 48))
-icon_phone = load_img("assets/icons/phone.png", (48, 48))
+icon_email = load_img("assets/icons/email.png", (64, 64))
+icon_phone = load_img("assets/icons/phone.png", (64, 64))
 qr_code = load_img("assets/qr_code.png")
 logo_back = load_img("assets/Tray_logo_white.png")
 
@@ -43,11 +43,11 @@ font_en_med = "fonts/PlusJakartaSans-Medium.ttf"
 
 def load_fonts(scale=1.0):
     return {
-        "ar_name": load_font(font_ar_bold, int(96 * scale)),
-        "ar_title": load_font(font_ar_reg, int(72 * scale)),
-        "en_name": load_font(font_en_bold, int(96 * scale)),
-        "en_title": load_font(font_en_med, int(72 * scale)),
-        "en_info": load_font(font_en_med, int(60 * scale)),
+        "ar_name": load_font(font_ar_bold, int(110 * scale)),
+        "ar_title": load_font(font_ar_reg, int(90 * scale)),
+        "en_name": load_font(font_en_bold, int(110 * scale)),
+        "en_title": load_font(font_en_med, int(90 * scale)),
+        "en_info": load_font(font_en_med, int(75 * scale)),
     }
 
 # --- SIDEBAR ---
@@ -74,17 +74,17 @@ def generate_front(width, height, fonts):
     draw.text((width - MARGIN, MARGIN + LINE_SPACING), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
 
     # Bottom Left (Contact Info)
-    contact_y = height - MARGIN - 150
+    contact_y = height - MARGIN - 180
     dummy_img = Image.new("RGB", (10, 10))
     dummy_draw = ImageDraw.Draw(dummy_img)
     email_bbox = dummy_draw.textbbox((0, 0), email, font=fonts["en_info"])
     text_height = email_bbox[3] - email_bbox[1]
     text_offset = (icon_email.size[1] - text_height) // 2
 
-    draw.text((MARGIN + 60, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 60, contact_y + 80 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 70, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 70, contact_y + 100 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
-    card.paste(icon_phone, (MARGIN, contact_y + 80), mask=icon_phone)
+    card.paste(icon_phone, (MARGIN, contact_y + 100), mask=icon_phone)
 
     # Bottom Right (QR)
     qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
