@@ -11,6 +11,8 @@ MARGIN = 150
 BG_COLOR = "white"
 TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
+QR_SIZE = 200
+LINE_SPACING = 100
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -65,11 +67,11 @@ def generate_front(width, height, fonts):
 
     # Top Left (EN)
     draw.text((MARGIN, MARGIN), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
-    draw.text((MARGIN, MARGIN + 100), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
+    draw.text((MARGIN, MARGIN + LINE_SPACING), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
 
     # Top Right (AR)
     draw.text((width - MARGIN, MARGIN), reshape_arabic(name_ar), font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
-    draw.text((width - MARGIN, MARGIN + 100), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
+    draw.text((width - MARGIN, MARGIN + LINE_SPACING), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
 
     # Bottom Left (Contact Info)
     contact_y = height - MARGIN - 150
@@ -85,7 +87,7 @@ def generate_front(width, height, fonts):
     card.paste(icon_phone, (MARGIN, contact_y + 80), mask=icon_phone)
 
     # Bottom Right (QR)
-    qr_scaled = ImageOps.contain(qr_code, (qr_code.width, 120))
+    qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
     card.paste(qr_scaled, (width - MARGIN - qr_scaled.width, height - MARGIN - qr_scaled.height), mask=qr_scaled)
     return card
 
