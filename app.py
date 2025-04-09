@@ -5,24 +5,20 @@ import os
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# App config
 st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
 
-# Arabic reshaping
 def reshape_arabic(text):
     reshaped = arabic_reshaper.reshape(text)
     return get_display(reshaped)
 
-# Load logo once, used for both sides
-def load_logo(resize_to=(120, 120)):
+def load_logo(size=(120, 120)):
     try:
         logo = Image.open("assets/tray_logo.png").convert("RGBA")
-        return ImageOps.contain(logo, resize_to)
+        return ImageOps.contain(logo, size)
     except FileNotFoundError:
         st.warning("⚠️ tray_logo.png not found in /assets")
-        return Image.new("RGBA", resize_to, "gray")
+        return Image.new("RGBA", size, "gray")
 
-# Load icon
 def load_icon(path):
     try:
         return Image.open(path).convert("RGBA").resize((28, 28))
@@ -30,30 +26,28 @@ def load_icon(path):
         st.warning(f"⚠️ Missing icon: {path}")
         return Image.new("RGBA", (28, 28), "gray")
 
-# Load assets
 icon_email = load_icon("assets/icons/email.png")
 icon_phone = load_icon("assets/icons/phone.png")
-shared_logo = load_logo((120, 120))  # Unified logo size
 
-# Load fonts
 try:
     font_ar_regular = "fonts/NotoSansArabic-Regular.ttf"
     font_ar_bold = "fonts/NotoSansArabic-SemiBold.ttf"
     font_en_bold = "fonts/PlusJakartaSans-Bold.ttf"
     font_en_medium = "fonts/PlusJakartaSans-Medium.ttf"
 
-    font_name_ar = ImageFont.truetype(font_ar_bold, 80)
-    font_title_ar = ImageFont.truetype(font_ar_regular, 60)
-    font_info_ar = ImageFont.truetype(font_ar_regular, 48)
-
-    font_name_en = ImageFont.truetype(font_en_bold, 80)
-    font_title_en = ImageFont.truetype(font_en_medium, 60)
-    font_info_en = ImageFont.truetype(font_en_medium, 48)
+    def load_fonts(scale=1.0):
+        return {
+            "ar_name": ImageFont.truetype(font_ar_bold, int(34 * scale)),
+            "ar_title": ImageFont.truetype(font_ar_regular, int(28 * scale)),
+            "ar_info": ImageFont.truetype(font_ar_regular, int(24 * scale)),
+            "en_name": ImageFont.truetype(font_en_bold, int(34 * scale)),
+            "en_title": ImageFont.truetype(font_en_medium, int(28 * scale)),
+            "en_info": ImageFont.truetype(font_en_medium, int(24 * scale)),
+        }
 except Exception as e:
-    st.error("❌ Font loading error. Please check the /fonts folder.")
+    st.error("❌ Font loading error.")
     st.stop()
 
-# Sidebar
 with st.sidebar:
     st.title("🪪 معلومات البطاقة")
     name_ar = st.text_input("الاسم بالعربية", "عبدالله رجب")
@@ -63,74 +57,73 @@ with st.sidebar:
     email = st.text_input("Email", "abdullah.rajab@alraedahdigital.sa")
     phone = st.text_input("Phone", "+966 59 294 8994")
 
-# Canvas size
-WIDTH, HEIGHT = 3840, 2160  # 4K resolution
+# Shared data
 text_color = "#002C5F"
+red_color = "#ea2f2f"
 
-def generate_front():
-    card = Image.new("RGB", (WIDTH, HEIGHT), color="white")
+# ================= FRONT & BACK GENERATORS ===================
+
+def generate_card(width, height, fonts, logo_size):
+    logo = load_logo(logo_size)
+    card = Image.new("RGB", (width, height), color="white")
     draw = ImageDraw.Draw(card)
 
-    # Text Y positions (adjusted for vertical alignment)
-    name_y_ar = 300
-    title_y_ar = 420
-    name_y_en = 305
-    title_y_en = 425
+    name_y_ar = int(0.15 * height)
+    title_y_ar = name_y_ar + int(0.1 * height)
+    name_y_en = name_y_ar + 5
+    title_y_en = title_y_ar + 5
+    logo_y = int(0.4 * height)
 
-    # Arabic
-    draw.text((3700, name_y_ar), reshape_arabic(name_ar), font=font_name_ar, fill=text_color, anchor="ra")
-    draw.text((3700, title_y_ar), reshape_arabic(title_ar), font=font_title_ar, fill=text_color, anchor="ra")
+    draw.text((width - 80, name_y_ar), reshape_arabic(name_ar), font=fonts["ar_name"], fill=text_color, anchor="ra")
+    draw.text((width - 80, title_y_ar), reshape_arabic(title_ar), font=fonts["ar_title"], fill=text_color, anchor="ra")
 
-    # English
-    draw.text((140, name_y_en), name_en, font=font_name_en, fill=text_color)
-    draw.text((140, title_y_en), title_en, font=font_title_en, fill=text_color)
+    draw.text((80, name_y_en), name_en, font=fonts["en_name"], fill=text_color)
+    draw.text((80, title_y_en), title_en, font=fonts["en_title"], fill=text_color)
 
-    # Contact info
-    icon_x = 140
-    text_x = 200
-    email_y = 1400
-    phone_y = 1520
+    icon_x = 80
+    text_x = 130
+    email_y = int(0.7 * height)
+    phone_y = email_y + 70
 
-    card.paste(icon_email, (icon_x, email_y), mask=icon_email)
-    card.paste(icon_phone, (icon_x, phone_y), mask=icon_phone)
+    card.paste(icon_email.resize((40, 40)), (icon_x, email_y), mask=icon_email)
+    card.paste(icon_phone.resize((40, 40)), (icon_x, phone_y), mask=icon_phone)
+    draw.text((text_x, email_y), email, font=fonts["en_info"], fill=text_color)
+    draw.text((text_x, phone_y), phone, font=fonts["en_info"], fill=text_color)
 
-    draw.text((text_x, email_y), email, font=font_info_en, fill=text_color)
-    draw.text((text_x, phone_y), phone, font=font_info_en, fill=text_color)
-
-    # Center logo
-    logo_pos = ((WIDTH - shared_logo.width) // 2, 850)
-    card.paste(shared_logo, logo_pos, mask=shared_logo)
-
+    card.paste(logo, ((width - logo.width) // 2, logo_y), mask=logo)
     return card
 
-def generate_back():
-    card = Image.new("RGB", (WIDTH, HEIGHT), color="#ea2f2f")
-    draw = ImageDraw.Draw(card)
+def generate_back(width, height, logo_size):
+    logo = load_logo(logo_size)
+    back = Image.new("RGB", (width, height), color=red_color)
+    back.paste(logo, ((width - logo.width) // 2, (height - logo.height) // 2), mask=logo)
+    return back
 
-    # Use same logo size as front
-    logo = shared_logo
-    logo_pos = ((WIDTH - logo.width) // 2, (HEIGHT - logo.height) // 2)
-    card.paste(logo, logo_pos, mask=logo)
+# ================= 4K VERSION ===================
 
-    return card
+W_4K, H_4K = 3840, 2160
+fonts_4k = load_fonts(scale=2.5)
+front_4k = generate_card(W_4K, H_4K, fonts_4k, logo_size=(300, 300))
+back_4k = generate_back(W_4K, H_4K, logo_size=(300, 300))
 
-# Generate images
-front_img = generate_front()
-back_img = generate_back()
+# ================= BUSINESS CARD SIZE ===================
 
-# Preview only the front
-st.subheader("🔍 Preview (Front)")
-preview_resized = front_img.resize((1200, 675))
-st.image(preview_resized)
+W_BC, H_BC = 1062, 591  # 9x5cm @ 300DPI
+fonts_bc = load_fonts(scale=1.0)
+front_bc = generate_card(W_BC, H_BC, fonts_bc, logo_size=(120, 120))
+back_bc = generate_back(W_BC, H_BC, logo_size=(120, 120))
 
-# PDF export
-pdf_buf = io.BytesIO()
-front_img_rgb = front_img.convert("RGB")
-back_img_rgb = back_img.convert("RGB")
-front_img_rgb.save(pdf_buf, format="PDF", save_all=True, append_images=[back_img_rgb])
-st.download_button("⬇️ تحميل الوجهين PDF (دقة عالية)", pdf_buf.getvalue(), "tray_card_4k.pdf", "application/pdf")
+# ================= STREAMLIT UI ===================
 
-# RGB image export (optional)
-rgb_buf = io.BytesIO()
-front_img.save(rgb_buf, format="PNG")
-st.download_button("⬇️ تحميل الواجهة الأمامية (RGB)", rgb_buf.getvalue(), "tray_front.png", "image/png")
+st.subheader("🔍 Preview (Front in 4K)")
+st.image(front_4k.resize((1200, 675)))
+
+# PDF (4K)
+pdf_4k = io.BytesIO()
+front_4k.convert("RGB").save(pdf_4k, format="PDF", save_all=True, append_images=[back_4k.convert("RGB")])
+st.download_button("⬇️ تحميل PDF دقة 4K", pdf_4k.getvalue(), "tray_card_4K.pdf", "application/pdf")
+
+# PDF (9x5cm)
+pdf_bc = io.BytesIO()
+front_bc.convert("RGB").save(pdf_bc, format="PDF", save_all=True, append_images=[back_bc.convert("RGB")])
+st.download_button("⬇️ تحميل PDF للطباعة (9×5سم)", pdf_bc.getvalue(), "tray_card_print.pdf", "application/pdf")
