@@ -6,7 +6,7 @@ import os
 st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
 
 # Load TRAY logo
-logo = Image.open("tray_logo.png").resize((120, 120))
+logo = Image.open("assets/tray_logo.png").resize((120, 120))
 
 # Load fonts
 font_path_regular = "fonts/NotoSansArabic-Regular.ttf"
