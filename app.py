@@ -14,8 +14,9 @@ RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
 ICON_GAP = 60
 CONTACT_LINE_HEIGHT = 100
-TEXT_LINE_GAP = 40
+TEXT_LINE_GAP = 60
 AUTO_GAP = 60
+ICON_SIZE = (96, 96)
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -25,7 +26,7 @@ def load_img(path, size=None):
     try:
         img = Image.open(path).convert("RGBA")
         if size:
-            img = img.resize(size, Image.ANTIALIAS)
+            img = img.resize(size, Image.LANCZOS)
         return img
     except Exception as e:
         print(f"Error loading image {path}: {e}")
@@ -35,10 +36,10 @@ def load_font(path, size):
     return ImageFont.truetype(path, size)
 
 # --- ASSETS ---
-icon_email = load_img("assets/icons/email_96.png", (96, 96))
-icon_phone = load_img("assets/icons/phone_96.png", (96, 96))
-qr_code = load_img("assets/qr_code.png")
-logo_back = load_img("assets/Tray_logo_white.png")
+icon_email = load_img("assets/icons/email_96.png", ICON_SIZE)
+icon_phone = load_img("assets/icons/phone_96.png", ICON_SIZE)
+qr_code = load_img("assets/icons/qr_code.png")
+logo_back = load_img("assets/icons/Tray_logo_white.png")
 
 font_ar_bold = "fonts/NotoSansArabic-SemiBold.ttf"
 font_ar_reg = "fonts/NotoSansArabic-Regular.ttf"
@@ -85,8 +86,8 @@ def generate_front(width, height, fonts):
     title_ar_box = fonts["ar_title"].getbbox(title_ar_text)
     title_ar_height = title_ar_box[3] - title_ar_box[1]
 
-    name_en_y = MARGIN - 40
-    name_ar_y = MARGIN - 40
+    name_en_y = MARGIN
+    name_ar_y = MARGIN
     title_en_y = name_en_y + name_en_height + AUTO_GAP
     title_ar_y = name_ar_y + name_ar_height + AUTO_GAP
 
@@ -105,11 +106,11 @@ def generate_front(width, height, fonts):
     email_box = fonts["en_info"].getbbox(email)
     email_height = email_box[3] - email_box[1]
 
-    email_y = contact_y + (icon_email.size[1] - email_height) // 2
+    email_y = contact_y + (ICON_SIZE[1] - email_height) // 2
     phone_y = email_y + email_height + TEXT_LINE_GAP
 
-    draw.text((MARGIN + 96 + ICON_GAP, email_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 96 + ICON_GAP, phone_y), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, email_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, phone_y), phone, font=fonts["en_info"], fill=TEXT_COLOR)
 
     icon_email_y = email_y + email_height // 2 - icon_email.height // 2
     icon_phone_y = phone_y + email_height // 2 - icon_phone.height // 2
