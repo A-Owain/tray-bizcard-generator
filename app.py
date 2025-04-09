@@ -12,7 +12,6 @@ BG_COLOR = "white"
 TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
-LINE_SPACING = 180
 ICON_GAP = 60
 CONTACT_LINE_HEIGHT = 100
 TEXT_LINE_GAP = 40
@@ -82,18 +81,18 @@ def generate_front(width, height, fonts):
     title_ar_box = fonts["ar_title"].getbbox(title_ar_text)
     title_ar_height = title_ar_box[3] - title_ar_box[1]
 
-    # Align names vertically centered with each other
-    name_top = MARGIN - 30
+    # Auto center-align based on heights
+    name_top = MARGIN
+    title_top = name_top + max(name_en_height, name_ar_height) + 20
+
     name_en_y = name_top + (max(name_en_height, name_ar_height) - name_en_height) // 2
     name_ar_y = name_top + (max(name_en_height, name_ar_height) - name_ar_height) // 2
 
-    draw.text((MARGIN, name_en_y), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
-    draw.text((width - MARGIN, name_ar_y), name_ar_text, font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
-
-    # Align titles vertically centered with each other
-    title_top = name_top + LINE_SPACING
     title_en_y = title_top + (max(title_en_height, title_ar_height) - title_en_height) // 2
     title_ar_y = title_top + (max(title_en_height, title_ar_height) - title_ar_height) // 2
+
+    draw.text((MARGIN, name_en_y), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
+    draw.text((width - MARGIN, name_ar_y), name_ar_text, font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
 
     draw.text((MARGIN, title_en_y), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
     draw.text((width - MARGIN, title_ar_y), title_ar_text, font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
@@ -102,7 +101,7 @@ def generate_front(width, height, fonts):
     qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
     qr_bottom_y = height - MARGIN
 
-    # Bottom Left (Contact Info) – aligned with QR baseline
+    # Bottom Left (Contact Info)
     contact_y = qr_bottom_y - 2 * CONTACT_LINE_HEIGHT
     email_box = fonts["en_info"].getbbox(email)
     email_height = email_box[3] - email_box[1]
