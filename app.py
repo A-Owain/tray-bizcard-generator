@@ -107,11 +107,11 @@ def generate_front(width, height, fonts):
     text_height_email = fonts["en_info"].getbbox(email)[3] - fonts["en_info"].getbbox(email)[1]
     text_height_phone = fonts["en_info"].getbbox(phone)[3] - fonts["en_info"].getbbox(phone)[1]
 
-    icon_y_email = contact_y + CONTACT_LINE_HEIGHT - ICON_SIZE[1]
-    icon_y_phone = icon_y_email + CONTACT_LINE_HEIGHT
-
     text_y_email = contact_y + CONTACT_LINE_HEIGHT - text_height_email
     text_y_phone = contact_y + (2 * CONTACT_LINE_HEIGHT) - text_height_phone
+
+    icon_y_email = contact_y + CONTACT_LINE_HEIGHT - ICON_SIZE[1]
+    icon_y_phone = contact_y + (2 * CONTACT_LINE_HEIGHT) - ICON_SIZE[1]
 
     draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_email), email, font=fonts["en_info"], fill=TEXT_COLOR)
     draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_phone), phone, font=fonts["en_info"], fill=TEXT_COLOR)
