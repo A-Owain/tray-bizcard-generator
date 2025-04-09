@@ -69,16 +69,20 @@ def generate_front(width, height, fonts):
     card = Image.new("RGB", (width, height), BG_COLOR)
     draw = ImageDraw.Draw(card)
 
-    # Top Left (EN)
-    draw.text((MARGIN, MARGIN), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
-    draw.text((MARGIN, MARGIN + LINE_SPACING), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
+    # Top Left (EN) – Adjusted upward to align with Arabic top
+    draw.text((MARGIN, MARGIN - 30), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
+    draw.text((MARGIN, MARGIN + LINE_SPACING - 30), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
 
-    # Top Right (AR) – Slight upward adjustment for baseline alignment
+    # Top Right (AR)
     draw.text((width - MARGIN, MARGIN - 30), reshape_arabic(name_ar), font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
     draw.text((width - MARGIN, MARGIN + LINE_SPACING - 30), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
 
-    # Bottom Left (Contact Info) – Slight downward shift
-    contact_y = height - MARGIN - 2 * CONTACT_LINE_HEIGHT + 30
+    # Bottom Right (QR)
+    qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
+    qr_bottom_y = height - MARGIN
+
+    # Bottom Left (Contact Info) – aligned with QR baseline
+    contact_y = qr_bottom_y - 2 * CONTACT_LINE_HEIGHT
     email_box = fonts["en_info"].getbbox(email)
     email_height = email_box[3] - email_box[1]
 
@@ -94,9 +98,7 @@ def generate_front(width, height, fonts):
     card.paste(icon_email, (MARGIN, icon_email_y), mask=icon_email)
     card.paste(icon_phone, (MARGIN, icon_phone_y), mask=icon_phone)
 
-    # Bottom Right (QR)
-    qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
-    card.paste(qr_scaled, (width - MARGIN - qr_scaled.width, height - MARGIN - qr_scaled.height), mask=qr_scaled)
+    card.paste(qr_scaled, (width - MARGIN - qr_scaled.width, qr_bottom_y - qr_scaled.height), mask=qr_scaled)
     return card
 
 def generate_back(width, height):
