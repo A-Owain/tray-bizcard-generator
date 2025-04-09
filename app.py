@@ -12,8 +12,8 @@ BG_COLOR = "white"
 TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
-LINE_SPACING = 150
-ICON_GAP = 20
+LINE_SPACING = 200
+ICON_GAP = 60
 
 # --- LOADERS ---
 def reshape_arabic(text):
