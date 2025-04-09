@@ -5,7 +5,7 @@ import os
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# App setup
+# App config
 st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
 
 # Arabic reshaping
@@ -13,16 +13,16 @@ def reshape_arabic(text):
     reshaped = arabic_reshaper.reshape(text)
     return get_display(reshaped)
 
-# Load logo
-def load_logo():
+# Load logo once, used for both sides
+def load_logo(resize_to=(120, 120)):
     try:
         logo = Image.open("assets/tray_logo.png").convert("RGBA")
-        return ImageOps.contain(logo, (300, 300))  # Scaled for back
+        return ImageOps.contain(logo, resize_to)
     except FileNotFoundError:
         st.warning("⚠️ tray_logo.png not found in /assets")
-        return Image.new("RGBA", (300, 300), "gray")
+        return Image.new("RGBA", resize_to, "gray")
 
-# Load icons
+# Load icon
 def load_icon(path):
     try:
         return Image.open(path).convert("RGBA").resize((28, 28))
@@ -30,9 +30,10 @@ def load_icon(path):
         st.warning(f"⚠️ Missing icon: {path}")
         return Image.new("RGBA", (28, 28), "gray")
 
+# Load assets
 icon_email = load_icon("assets/icons/email.png")
 icon_phone = load_icon("assets/icons/phone.png")
-logo = load_logo()
+shared_logo = load_logo((120, 120))  # Unified logo size
 
 # Load fonts
 try:
@@ -52,7 +53,7 @@ except Exception as e:
     st.error("❌ Font loading error. Please check the /fonts folder.")
     st.stop()
 
-# Sidebar input
+# Sidebar
 with st.sidebar:
     st.title("🪪 معلومات البطاقة")
     name_ar = st.text_input("الاسم بالعربية", "عبدالله رجب")
@@ -62,7 +63,7 @@ with st.sidebar:
     email = st.text_input("Email", "abdullah.rajab@alraedahdigital.sa")
     phone = st.text_input("Phone", "+966 59 294 8994")
 
-# Constants
+# Canvas size
 WIDTH, HEIGHT = 3840, 2160  # 4K resolution
 text_color = "#002C5F"
 
@@ -70,7 +71,7 @@ def generate_front():
     card = Image.new("RGB", (WIDTH, HEIGHT), color="white")
     draw = ImageDraw.Draw(card)
 
-    # Name/title alignment fix
+    # Text Y positions (adjusted for vertical alignment)
     name_y_ar = 300
     title_y_ar = 420
     name_y_en = 305
@@ -97,8 +98,8 @@ def generate_front():
     draw.text((text_x, phone_y), phone, font=font_info_en, fill=text_color)
 
     # Center logo
-    logo_pos = ((WIDTH - logo.width) // 2, 850)
-    card.paste(logo, logo_pos, mask=logo)
+    logo_pos = ((WIDTH - shared_logo.width) // 2, 850)
+    card.paste(shared_logo, logo_pos, mask=shared_logo)
 
     return card
 
@@ -106,29 +107,30 @@ def generate_back():
     card = Image.new("RGB", (WIDTH, HEIGHT), color="#ea2f2f")
     draw = ImageDraw.Draw(card)
 
-    # Center logo
+    # Use same logo size as front
+    logo = shared_logo
     logo_pos = ((WIDTH - logo.width) // 2, (HEIGHT - logo.height) // 2)
     card.paste(logo, logo_pos, mask=logo)
 
     return card
 
-# Generate both sides
+# Generate images
 front_img = generate_front()
 back_img = generate_back()
 
-# Show front only for preview
+# Preview only the front
 st.subheader("🔍 Preview (Front)")
 preview_resized = front_img.resize((1200, 675))
 st.image(preview_resized)
 
-# PDF Export
+# PDF export
 pdf_buf = io.BytesIO()
 front_img_rgb = front_img.convert("RGB")
 back_img_rgb = back_img.convert("RGB")
 front_img_rgb.save(pdf_buf, format="PDF", save_all=True, append_images=[back_img_rgb])
 st.download_button("⬇️ تحميل الوجهين PDF (دقة عالية)", pdf_buf.getvalue(), "tray_card_4k.pdf", "application/pdf")
 
-# Optional PNG download
+# RGB image export (optional)
 rgb_buf = io.BytesIO()
 front_img.save(rgb_buf, format="PNG")
 st.download_button("⬇️ تحميل الواجهة الأمامية (RGB)", rgb_buf.getvalue(), "tray_front.png", "image/png")
