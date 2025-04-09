@@ -69,13 +69,34 @@ def generate_front(width, height, fonts):
     card = Image.new("RGB", (width, height), BG_COLOR)
     draw = ImageDraw.Draw(card)
 
-    # Top Left (EN) – Adjusted upward to align with Arabic top
-    draw.text((MARGIN, MARGIN - 30), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
-    draw.text((MARGIN, MARGIN + LINE_SPACING - 30), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
+    # Get bounding boxes for names and titles
+    name_en_box = fonts["en_name"].getbbox(name_en)
+    name_en_height = name_en_box[3] - name_en_box[1]
+    title_en_box = fonts["en_title"].getbbox(title_en)
+    title_en_height = title_en_box[3] - title_en_box[1]
 
-    # Top Right (AR)
-    draw.text((width - MARGIN, MARGIN - 30), reshape_arabic(name_ar), font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
-    draw.text((width - MARGIN, MARGIN + LINE_SPACING - 30), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
+    name_ar_text = reshape_arabic(name_ar)
+    name_ar_box = fonts["ar_name"].getbbox(name_ar_text)
+    name_ar_height = name_ar_box[3] - name_ar_box[1]
+    title_ar_text = reshape_arabic(title_ar)
+    title_ar_box = fonts["ar_title"].getbbox(title_ar_text)
+    title_ar_height = title_ar_box[3] - title_ar_box[1]
+
+    # Align names vertically centered with each other
+    name_top = MARGIN - 30
+    name_en_y = name_top + (max(name_en_height, name_ar_height) - name_en_height) // 2
+    name_ar_y = name_top + (max(name_en_height, name_ar_height) - name_ar_height) // 2
+
+    draw.text((MARGIN, name_en_y), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
+    draw.text((width - MARGIN, name_ar_y), name_ar_text, font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
+
+    # Align titles vertically centered with each other
+    title_top = name_top + LINE_SPACING
+    title_en_y = title_top + (max(title_en_height, title_ar_height) - title_en_height) // 2
+    title_ar_y = title_top + (max(title_en_height, title_ar_height) - title_ar_height) // 2
+
+    draw.text((MARGIN, title_en_y), title_en, font=fonts["en_title"], fill=TEXT_COLOR)
+    draw.text((width - MARGIN, title_ar_y), title_ar_text, font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
 
     # Bottom Right (QR)
     qr_scaled = ImageOps.contain(qr_code, (QR_SIZE, QR_SIZE))
