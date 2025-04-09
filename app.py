@@ -16,7 +16,7 @@ def reshape_arabic(text):
 
 # Load logo with transparency and cache busting
 try:
-    logo_path = "assets/tray_logo.png"
+    logo_path = "assets/Tray_logo.png"
     logo = Image.open(logo_path).convert("RGBA")
     logo = ImageOps.contain(logo, (120, 120))
 except FileNotFoundError:
