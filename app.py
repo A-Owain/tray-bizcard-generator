@@ -13,7 +13,7 @@ TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
 ICON_GAP = 60
-CONTACT_LINE_HEIGHT = 100
+CONTACT_LINE_HEIGHT = 120
 TEXT_LINE_GAP = 60
 AUTO_GAP = 60
 ICON_SIZE = (96, 96)
@@ -36,8 +36,8 @@ def load_font(path, size):
     return ImageFont.truetype(path, size)
 
 # --- ASSETS ---
-icon_email = load_img("assets/icons/email_96.png", ICON_SIZE)
-icon_phone = load_img("assets/icons/phone_96.png", ICON_SIZE)
+icon_email = load_img("assets/icons/email.png", ICON_SIZE)
+icon_phone = load_img("assets/icons/phone.png", ICON_SIZE)
 qr_code = load_img("assets/icons/qr_code.png")
 logo_back = load_img("assets/icons/Tray_logo_white.png")
 
@@ -103,20 +103,18 @@ def generate_front(width, height, fonts):
 
     # Bottom Left (Contact Info)
     contact_y = qr_bottom_y - 2 * CONTACT_LINE_HEIGHT
-    email_box = fonts["en_info"].getbbox(email)
-    email_height = email_box[3] - email_box[1]
 
-    email_y = contact_y + (ICON_SIZE[1] - email_height) // 2
-    phone_y = email_y + email_height + TEXT_LINE_GAP
+    icon_y_email = contact_y + (CONTACT_LINE_HEIGHT - ICON_SIZE[1]) // 2
+    icon_y_phone = icon_y_email + CONTACT_LINE_HEIGHT
 
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, email_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, phone_y), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    text_y_email = icon_y_email + (ICON_SIZE[1] - fonts["en_info"].getbbox(email)[3]) // 2
+    text_y_phone = icon_y_phone + (ICON_SIZE[1] - fonts["en_info"].getbbox(phone)[3]) // 2
 
-    icon_email_y = email_y + email_height // 2 - icon_email.height // 2
-    icon_phone_y = phone_y + email_height // 2 - icon_phone.height // 2
+    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_email), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_phone), phone, font=fonts["en_info"], fill=TEXT_COLOR)
 
-    card.paste(icon_email, (MARGIN, icon_email_y), mask=icon_email)
-    card.paste(icon_phone, (MARGIN, icon_phone_y), mask=icon_phone)
+    card.paste(icon_email, (MARGIN, icon_y_email), mask=icon_email)
+    card.paste(icon_phone, (MARGIN, icon_y_phone), mask=icon_phone)
 
     card.paste(qr_scaled, (width - MARGIN - qr_scaled.width, qr_bottom_y - qr_scaled.height), mask=qr_scaled)
     return card
