@@ -13,7 +13,7 @@ TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
 ICON_GAP = 60
-CONTACT_LINE_HEIGHT = 120
+CONTACT_LINE_HEIGHT = 240
 TEXT_LINE_GAP = 60
 AUTO_GAP = 60
 ICON_SIZE = (96, 96)
@@ -102,13 +102,16 @@ def generate_front(width, height, fonts):
     qr_bottom_y = height - MARGIN
 
     # Bottom Left (Contact Info)
-    contact_y = qr_bottom_y - 2 * CONTACT_LINE_HEIGHT
+    contact_y = qr_bottom_y - (2 * CONTACT_LINE_HEIGHT)
 
-    icon_y_email = contact_y + (CONTACT_LINE_HEIGHT - ICON_SIZE[1]) // 2
+    text_height_email = fonts["en_info"].getbbox(email)[3] - fonts["en_info"].getbbox(email)[1]
+    text_height_phone = fonts["en_info"].getbbox(phone)[3] - fonts["en_info"].getbbox(phone)[1]
+
+    icon_y_email = contact_y + CONTACT_LINE_HEIGHT - ICON_SIZE[1]
     icon_y_phone = icon_y_email + CONTACT_LINE_HEIGHT
 
-    text_y_email = icon_y_email + (ICON_SIZE[1] - fonts["en_info"].getbbox(email)[3]) // 2
-    text_y_phone = icon_y_phone + (ICON_SIZE[1] - fonts["en_info"].getbbox(phone)[3]) // 2
+    text_y_email = contact_y + CONTACT_LINE_HEIGHT - text_height_email
+    text_y_phone = contact_y + (2 * CONTACT_LINE_HEIGHT) - text_height_phone
 
     draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_email), email, font=fonts["en_info"], fill=TEXT_COLOR)
     draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, text_y_phone), phone, font=fonts["en_info"], fill=TEXT_COLOR)
