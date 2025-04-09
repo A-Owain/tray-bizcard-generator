@@ -11,24 +11,26 @@ def reshape_arabic(text):
     reshaped = arabic_reshaper.reshape(text)
     return get_display(reshaped)
 
-def load_logo(size=(120, 120)):
+def load_logo(path, size=(120, 120)):
     try:
-        logo = Image.open("assets/tray_logo.png").convert("RGBA")
+        logo = Image.open(path).convert("RGBA")
         return ImageOps.contain(logo, size)
     except FileNotFoundError:
-        st.warning("⚠️ tray_logo.png not found in /assets")
+        st.warning(f"⚠️ Logo not found: {path}")
         return Image.new("RGBA", size, "gray")
 
 def load_icon(path):
     try:
-        return Image.open(path).convert("RGBA").resize((28, 28))
+        return Image.open(path).convert("RGBA").resize((40, 40))
     except FileNotFoundError:
         st.warning(f"⚠️ Missing icon: {path}")
-        return Image.new("RGBA", (28, 28), "gray")
+        return Image.new("RGBA", (40, 40), "gray")
 
+# Load assets
 icon_email = load_icon("assets/icons/email.png")
 icon_phone = load_icon("assets/icons/phone.png")
 
+# Fonts
 try:
     font_ar_regular = "fonts/NotoSansArabic-Regular.ttf"
     font_ar_bold = "fonts/NotoSansArabic-SemiBold.ttf"
@@ -48,6 +50,7 @@ except Exception as e:
     st.error("❌ Font loading error.")
     st.stop()
 
+# Sidebar
 with st.sidebar:
     st.title("🪪 معلومات البطاقة")
     name_ar = st.text_input("الاسم بالعربية", "عبدالله رجب")
@@ -57,73 +60,71 @@ with st.sidebar:
     email = st.text_input("Email", "abdullah.rajab@alraedahdigital.sa")
     phone = st.text_input("Phone", "+966 59 294 8994")
 
-# Shared data
+# Constants
 text_color = "#002C5F"
 red_color = "#ea2f2f"
 
 # ================= FRONT & BACK GENERATORS ===================
 
-def generate_card(width, height, fonts, logo_size):
-    logo = load_logo(logo_size)
+def generate_front(width, height, fonts, logo_path, logo_size):
+    logo = load_logo(logo_path, size=logo_size)
     card = Image.new("RGB", (width, height), color="white")
     draw = ImageDraw.Draw(card)
 
-    name_y_ar = int(0.15 * height)
-    title_y_ar = name_y_ar + int(0.1 * height)
-    name_y_en = name_y_ar + 5
-    title_y_en = title_y_ar + 5
-    logo_y = int(0.4 * height)
+    margin = 100
+    content_top = int(height * 0.2)
+    spacing = 60
 
-    draw.text((width - 80, name_y_ar), reshape_arabic(name_ar), font=fonts["ar_name"], fill=text_color, anchor="ra")
-    draw.text((width - 80, title_y_ar), reshape_arabic(title_ar), font=fonts["ar_title"], fill=text_color, anchor="ra")
+    # Arabic
+    draw.text((width - margin, content_top), reshape_arabic(name_ar), font=fonts["ar_name"], fill=text_color, anchor="ra")
+    draw.text((width - margin, content_top + spacing), reshape_arabic(title_ar), font=fonts["ar_title"], fill=text_color, anchor="ra")
 
-    draw.text((80, name_y_en), name_en, font=fonts["en_name"], fill=text_color)
-    draw.text((80, title_y_en), title_en, font=fonts["en_title"], fill=text_color)
+    # English
+    draw.text((margin, content_top + 5), name_en, font=fonts["en_name"], fill=text_color)
+    draw.text((margin, content_top + spacing + 5), title_en, font=fonts["en_title"], fill=text_color)
 
-    icon_x = 80
-    text_x = 130
-    email_y = int(0.7 * height)
-    phone_y = email_y + 70
+    # Contact
+    contact_top = int(height * 0.7)
+    card.paste(icon_email, (margin, contact_top), mask=icon_email)
+    card.paste(icon_phone, (margin, contact_top + spacing), mask=icon_phone)
+    draw.text((margin + 50, contact_top), email, font=fonts["en_info"], fill=text_color)
+    draw.text((margin + 50, contact_top + spacing), phone, font=fonts["en_info"], fill=text_color)
 
-    card.paste(icon_email.resize((40, 40)), (icon_x, email_y), mask=icon_email)
-    card.paste(icon_phone.resize((40, 40)), (icon_x, phone_y), mask=icon_phone)
-    draw.text((text_x, email_y), email, font=fonts["en_info"], fill=text_color)
-    draw.text((text_x, phone_y), phone, font=fonts["en_info"], fill=text_color)
-
-    card.paste(logo, ((width - logo.width) // 2, logo_y), mask=logo)
+    # Center logo
+    logo_pos = ((width - logo.width) // 2, int(height * 0.45))
+    card.paste(logo, logo_pos, mask=logo)
     return card
 
-def generate_back(width, height, logo_size):
-    logo = load_logo(logo_size)
+def generate_back(width, height, logo_path, logo_size):
+    logo = load_logo(logo_path, size=logo_size)
     back = Image.new("RGB", (width, height), color=red_color)
-    back.paste(logo, ((width - logo.width) // 2, (height - logo.height) // 2), mask=logo)
+    logo_pos = ((width - logo.width) // 2, (height - logo.height) // 2)
+    back.paste(logo, logo_pos, mask=logo)
     return back
 
-# ================= 4K VERSION ===================
-
+# ================= SIZES ===================
 W_4K, H_4K = 3840, 2160
-fonts_4k = load_fonts(scale=2.5)
-front_4k = generate_card(W_4K, H_4K, fonts_4k, logo_size=(300, 300))
-back_4k = generate_back(W_4K, H_4K, logo_size=(300, 300))
-
-# ================= BUSINESS CARD SIZE ===================
-
 W_BC, H_BC = 1062, 591  # 9x5cm @ 300DPI
+
+fonts_4k = load_fonts(scale=2.5)
 fonts_bc = load_fonts(scale=1.0)
-front_bc = generate_card(W_BC, H_BC, fonts_bc, logo_size=(120, 120))
-back_bc = generate_back(W_BC, H_BC, logo_size=(120, 120))
 
-# ================= STREAMLIT UI ===================
+front_4k = generate_front(W_4K, H_4K, fonts_4k, "assets/tray_logo.png", (250, 250))
+back_4k = generate_back(W_4K, H_4K, "assets/Tray_logo_white.png", (250, 250))
 
-st.subheader("🔍 Preview (Front in 4K)")
+front_bc = generate_front(W_BC, H_BC, fonts_bc, "assets/tray_logo.png", (120, 120))
+back_bc = generate_back(W_BC, H_BC, "assets/Tray_logo_white.png", (120, 120))
+
+# ================= STREAMLIT ===================
+st.subheader("🔍 Preview (Front)")
 st.image(front_4k.resize((1200, 675)))
 
-# PDF (4K)
-pdf_4k = io.BytesIO()
-front_4k.convert("RGB").save(pdf_4k, format="PDF", save_all=True, append_images=[back_4k.convert("RGB")])
-st.download_button("⬇️ تحميل PDF دقة 4K", pdf_4k.getvalue(), "tray_card_4K.pdf", "application/pdf")
+# 4K PDF
+buf_4k = io.BytesIO()
+front_4k.convert("RGB").save(buf_4k, format="PDF", save_all=True, append_images=[back_4k.convert("RGB")])
+st.download_button("⬇️ تحميل PDF دقة 4K", buf_4k.getvalue(), "tray_card_4K.pdf", "application/pdf")
 
-# PDF (9x5cm)
-pdf_bc = io.BytesIO()
-front_bc.convert("RGB").save(pdf_bc, format="PDF", save_all=True, append_images=[back_bc.convert("RGB")])
-st.download_button("⬇️ تحميل PDF للطباعة (9×5سم)", pdf_bc.getvalue(), "tray_card_print.pdf", "application/pdf")
+# Business Card PDF
+buf_bc = io.BytesIO()
+front_bc.convert("RGB").save(buf_bc, format="PDF", save_all=True, append_images=[back_bc.convert("RGB")])
+st.download_button("⬇️ تحميل PDF للطباعة (9×5سم)", buf_bc.getvalue(), "tray_card_print.pdf", "application/pdf")
