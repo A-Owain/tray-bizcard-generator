@@ -85,10 +85,10 @@ def generate_front(width, height, fonts):
     title_ar_box = fonts["ar_title"].getbbox(title_ar_text)
     title_ar_height = title_ar_box[3] - title_ar_box[1]
 
-    name_en_y = MARGIN
-    name_ar_y = MARGIN + (name_en_height - name_ar_height) // 2
+    name_en_y = MARGIN - 20  # Move English name higher
+    name_ar_y = MARGIN - 20  # Keep Arabic name aligned with English
     title_en_y = name_en_y + name_en_height + AUTO_GAP
-    title_ar_y = title_en_y + (title_en_height - title_ar_height)
+    title_ar_y = name_ar_y + name_ar_height + AUTO_GAP
 
     draw.text((MARGIN, name_en_y), name_en, font=fonts["en_name"], fill=TEXT_COLOR)
     draw.text((width - MARGIN, name_ar_y), name_ar_text, font=fonts["ar_name"], fill=TEXT_COLOR, anchor="ra")
