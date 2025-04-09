@@ -79,10 +79,14 @@ def generate_front(width, height, fonts):
 
     # Bottom Left (Contact Info)
     contact_y = height - MARGIN - 2 * CONTACT_LINE_HEIGHT
-    text_y = contact_y + (icon_email.size[1] - fonts["en_info"].getbbox(email)[3]) // 2
+    email_box = fonts["en_info"].getbbox(email)
+    email_height = email_box[3] - email_box[1]
 
-    draw.text((MARGIN + 96 + ICON_GAP, text_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 96 + ICON_GAP, text_y + CONTACT_LINE_HEIGHT + TEXT_LINE_GAP), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    email_y = contact_y + (icon_email.size[1] - email_height) // 2
+    phone_y = email_y + email_height + TEXT_LINE_GAP
+
+    draw.text((MARGIN + 96 + ICON_GAP, email_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 96 + ICON_GAP, phone_y), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
     card.paste(icon_phone, (MARGIN, contact_y + CONTACT_LINE_HEIGHT), mask=icon_phone)
 
