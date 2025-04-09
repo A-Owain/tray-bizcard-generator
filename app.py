@@ -15,7 +15,7 @@ QR_SIZE = 600
 LINE_SPACING = 180
 ICON_GAP = 60
 CONTACT_LINE_HEIGHT = 100
-TEXT_LINE_GAP = 20
+TEXT_LINE_GAP = 40
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -78,15 +78,11 @@ def generate_front(width, height, fonts):
     draw.text((width - MARGIN, MARGIN + LINE_SPACING), reshape_arabic(title_ar), font=fonts["ar_title"], fill=TEXT_COLOR, anchor="ra")
 
     # Bottom Left (Contact Info)
-    contact_y = height - MARGIN - CONTACT_LINE_HEIGHT - CONTACT_LINE_HEIGHT
-    dummy_img = Image.new("RGB", (10, 10))
-    dummy_draw = ImageDraw.Draw(dummy_img)
-    email_bbox = dummy_draw.textbbox((0, 0), email, font=fonts["en_info"])
-    text_height = email_bbox[3] - email_bbox[1]
-    text_offset = (icon_email.size[1] - text_height) // 2
+    contact_y = height - MARGIN - 2 * CONTACT_LINE_HEIGHT
+    text_y = contact_y + (icon_email.size[1] - fonts["en_info"].getbbox(email)[3]) // 2
 
-    draw.text((MARGIN + 96 + ICON_GAP, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 96 + ICON_GAP, contact_y + CONTACT_LINE_HEIGHT + text_offset + TEXT_LINE_GAP), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 96 + ICON_GAP, text_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 96 + ICON_GAP, text_y + CONTACT_LINE_HEIGHT + TEXT_LINE_GAP), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
     card.paste(icon_phone, (MARGIN, contact_y + CONTACT_LINE_HEIGHT), mask=icon_phone)
 
