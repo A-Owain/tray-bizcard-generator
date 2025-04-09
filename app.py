@@ -13,6 +13,7 @@ TEXT_COLOR = "#002C5F"
 RED_COLOR = "#ea2f2f"
 QR_SIZE = 600
 LINE_SPACING = 130
+ICON_GAP = 20
 
 # --- LOADERS ---
 def reshape_arabic(text):
@@ -45,9 +46,9 @@ font_en_med = "fonts/PlusJakartaSans-Medium.ttf"
 def load_fonts(scale=1.0):
     return {
         "ar_name": load_font(font_ar_bold, int(110 * scale)),
-        "ar_title": load_font(font_ar_reg, int(90 * scale)),
+        "ar_title": load_font(font_ar_reg, int(70 * scale)),
         "en_name": load_font(font_en_bold, int(110 * scale)),
-        "en_title": load_font(font_en_med, int(90 * scale)),
+        "en_title": load_font(font_en_med, int(70 * scale)),
         "en_info": load_font(font_en_med, int(80 * scale)),
     }
 
@@ -82,8 +83,8 @@ def generate_front(width, height, fonts):
     text_height = email_bbox[3] - email_bbox[1]
     text_offset = (icon_email.size[1] - text_height) // 2
 
-    draw.text((MARGIN + 80, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 80, contact_y + 100 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 64 + ICON_GAP, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 64 + ICON_GAP, contact_y + 100 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
     card.paste(icon_phone, (MARGIN, contact_y + 100), mask=icon_phone)
 
