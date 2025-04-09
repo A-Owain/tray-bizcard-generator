@@ -96,7 +96,7 @@ def generate_front(width, height, fonts):
 
 def generate_back(width, height):
     card = Image.new("RGB", (width, height), RED_COLOR)
-    logo = ImageOps.contain(logo_back, (600, 600))
+    logo = ImageOps.contain(logo_back, (1000, 1000))
     card.paste(logo, ((width - logo.width)//2, (height - logo.height)//2), mask=logo)
     return card
 
