@@ -5,15 +5,15 @@ import os
 import arabic_reshaper
 from bidi.algorithm import get_display
 
-# Page settings
+# Page config
 st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
 
-# Arabic reshaping function
+# Arabic reshaping
 def reshape_arabic(text):
     reshaped = arabic_reshaper.reshape(text)
     return get_display(reshaped)
 
-# Load TRAY logo
+# Load logo
 try:
     logo = Image.open("assets/tray_logo.png").convert("RGBA")
     logo = ImageOps.contain(logo, (120, 120))
@@ -21,7 +21,7 @@ except FileNotFoundError:
     st.warning("⚠️ tray_logo.png not found in /assets")
     logo = Image.new("RGBA", (120, 120), "gray")
 
-# Load icons safely
+# Load icons
 def load_icon(path):
     try:
         return Image.open(path).convert("RGBA").resize((28, 28))
@@ -50,7 +50,7 @@ except Exception as e:
     st.error("❌ Font loading error. Please check the /fonts folder.")
     st.stop()
 
-# Sidebar inputs
+# Sidebar form
 with st.sidebar:
     st.title("🪪 معلومات البطاقة")
     name_ar = st.text_input("الاسم بالعربية", "عبدالله رجب")
@@ -60,7 +60,7 @@ with st.sidebar:
     email = st.text_input("Email", "abdullah.rajab@alraedahdigital.sa")
     phone = st.text_input("Phone", "+966 59 294 8994")
 
-# Card settings
+# Card layout settings
 W, H = 1000, 600
 bg_color = "white"
 text_color = "#002C5F"
@@ -69,15 +69,19 @@ def generate_card():
     card = Image.new("RGB", (W, H), color=bg_color)
     draw = ImageDraw.Draw(card)
 
-    # Arabic section
-    draw.text((950, 80), reshape_arabic(name_ar), font=font_name_ar, fill=text_color, anchor="ra")
-    draw.text((950, 130), reshape_arabic(title_ar), font=font_title_ar, fill=text_color, anchor="ra")
+    # Vertical alignment
+    name_y = 80
+    title_y = 130
 
-    # English section
-    draw.text((50, 80), name_en, font=font_name_en, fill=text_color)
-    draw.text((50, 130), title_en, font=font_title_en, fill=text_color)
+    # Arabic (right-aligned)
+    draw.text((950, name_y), reshape_arabic(name_ar), font=font_name_ar, fill=text_color, anchor="ra")
+    draw.text((950, title_y), reshape_arabic(title_ar), font=font_title_ar, fill=text_color, anchor="ra")
 
-    # Contact info section with icons
+    # English (left-aligned)
+    draw.text((50, name_y), name_en, font=font_name_en, fill=text_color)
+    draw.text((50, title_y), title_en, font=font_title_en, fill=text_color)
+
+    # Contact section with icons
     icon_x = 50
     text_x = 90
     email_y = 395
@@ -89,23 +93,23 @@ def generate_card():
     draw.text((text_x, email_y), email, font=font_info_en, fill=text_color)
     draw.text((text_x, phone_y), phone, font=font_info_en, fill=text_color)
 
-    # Center logo
+    # Centered logo
     card.paste(logo, (440, 240), mask=logo)
 
     return card
 
-# Display
+# Show preview
 st.subheader("🔍 Preview")
 card_img = generate_card()
 st.image(card_img)
 
-# Export CMYK
+# CMYK export
 cmyk_card = card_img.convert("CMYK")
 cmyk_buf = io.BytesIO()
 cmyk_card.save(cmyk_buf, format="TIFF")
 st.download_button("⬇️ تحميل بطاقة CMYK للطباعة", cmyk_buf.getvalue(), "tray_card.tiff", "image/tiff")
 
-# Export RGB
+# RGB export
 rgb_buf = io.BytesIO()
 card_img.save(rgb_buf, format="PNG")
 st.download_button("⬇️ تحميل بطاقة الشاشة (RGB)", rgb_buf.getvalue(), "tray_card.png", "image/png")
