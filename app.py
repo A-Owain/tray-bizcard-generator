@@ -31,8 +31,8 @@ def load_font(path, size):
 # --- ASSETS ---
 icon_email = load_img("assets/icons/email.png", (48, 48))
 icon_phone = load_img("assets/icons/phone.png", (48, 48))
-qr_code = load_img("assets/qr_code.png", (200, 200))
-logo_back = load_img("assets/tray_logo_white.png")
+qr_code = load_img("assets/qr_code.png")
+logo_back = load_img("assets/Tray_logo_white.png")
 
 font_ar_bold = "fonts/NotoSansArabic-SemiBold.ttf"
 font_ar_reg = "fonts/NotoSansArabic-Regular.ttf"
@@ -73,13 +73,15 @@ def generate_front(width, height, fonts):
 
     # Bottom Left (Contact Info)
     contact_y = height - MARGIN - 150
-    draw.text((MARGIN + 60, contact_y), email, font=fonts["en_info"], fill=TEXT_COLOR)
-    draw.text((MARGIN + 60, contact_y + 80), phone, font=fonts["en_info"], fill=TEXT_COLOR)
+    text_offset = (icon_email.size[1] - fonts["en_info"].getsize(email)[1]) // 2
+    draw.text((MARGIN + 60, contact_y + text_offset), email, font=fonts["en_info"], fill=TEXT_COLOR)
+    draw.text((MARGIN + 60, contact_y + 80 + text_offset), phone, font=fonts["en_info"], fill=TEXT_COLOR)
     card.paste(icon_email, (MARGIN, contact_y), mask=icon_email)
     card.paste(icon_phone, (MARGIN, contact_y + 80), mask=icon_phone)
 
     # Bottom Right (QR)
-    card.paste(qr_code, (width - MARGIN - qr_code.width, height - MARGIN - qr_code.height), mask=qr_code)
+    qr_scaled = ImageOps.contain(qr_code, (qr_code.width, 120))
+    card.paste(qr_scaled, (width - MARGIN - qr_scaled.width, height - MARGIN - qr_scaled.height), mask=qr_scaled)
     return card
 
 def generate_back(width, height):
