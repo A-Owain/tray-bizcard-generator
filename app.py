@@ -1,3 +1,4 @@
+
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import arabic_reshaper
@@ -21,6 +22,7 @@ FONT_EN_BOLD = "assets/fonts/PlusJakartaSans-Bold.ttf"
 ICON_EMAIL = "assets/icons/email.png"
 ICON_PHONE = "assets/icons/phone.png"
 QR_CODE = "assets/icons/qr_code.png"
+LOGO_BACK = "assets/icons/tray_logo_white.png"
 
 # Loaders
 def load_font(path, size):
@@ -35,7 +37,7 @@ def load_img(path, size=None):
 def reshape_arabic(text):
     return get_display(arabic_reshaper.reshape(text))
 
-# Generator
+# Front face generator
 def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, phone):
     img = Image.new("RGB", (w, h), color="white")
     draw = ImageDraw.Draw(img)
@@ -44,20 +46,16 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
     icon_phone = load_img(ICON_PHONE, ICON_SIZE)
     qr_code = load_img(QR_CODE, (QR_SIZE, QR_SIZE))
 
-    # Reshape Arabic
     ar_name = reshape_arabic(ar_name)
     ar_title = reshape_arabic(ar_title)
 
-    # Top Left (English)
     draw.text((MARGIN, MARGIN), en_name, font=fonts["en_bold"], fill="#001F4B")
     draw.text((MARGIN, MARGIN + 110), en_title, font=fonts["en_regular"], fill="#001F4B")
 
-    # Top Right (Arabic)
     AR_Y_OFFSET = -30
     draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET), ar_name, font=fonts["ar_bold"], fill="#001F4B", anchor="ra")
     draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET + 110), ar_title, font=fonts["ar_regular"], fill="#001F4B", anchor="ra")
 
-    # Bottom Left
     contact_y = h - MARGIN - ICON_SIZE[1]*2 - LINE_SPACING
     img.paste(icon_email, (MARGIN, contact_y), icon_email)
     draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + 10), email, font=fonts["en_regular"], fill="#001F4B")
@@ -66,7 +64,6 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
     img.paste(icon_phone, (MARGIN, contact_y), icon_phone)
     draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + 10), phone, font=fonts["en_regular"], fill="#001F4B")
 
-    # Bottom Right (QR)
     img.paste(qr_code, (w - MARGIN - QR_SIZE, h - MARGIN - QR_SIZE), qr_code)
 
     return img
@@ -74,18 +71,18 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
 # Back face generator
 def generate_back(w, h):
     img = Image.new("RGB", (w, h), "#ea2f2f")
-    logo_path = "assets/icons/tray_logo_white.png"
-    if not os.path.exists(logo_path):
-        st.error(f"⚠️ Logo not found at: {logo_path}")
+    if not os.path.exists(LOGO_BACK):
+        st.error(f"⚠️ Logo not found at: {LOGO_BACK}")
         return img
-    logo = load_img(logo_path, (1300, 1300))
+    logo = load_img(LOGO_BACK, (1300, 1300))
     img.paste(logo, ((w - logo.width) // 2, (h - logo.height) // 2), logo)
     return img
 
 # Streamlit app
 st.set_page_config(layout="centered")
-st.title("\U0001F50D Preview (Front)")
+st.title("🖼️ Business Card Generator")
 
+# Inputs
 ar_name = st.text_input("Arabic Name", "")
 ar_title = st.text_input("Arabic Job Title", "")
 en_name = st.text_input("English Name", "")
@@ -102,11 +99,18 @@ fonts = {
 
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
     with st.container():
-
-    with tab1:
         card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
+        card_back = generate_back(W_4K, H_4K)
+
         st.image(card_image)
-        buf_front = io.BytesIO()
-        card_image.save(buf_front, format="PDF")
-        buf_front.seek(0)
-        st.download_button("📅 Download Front PDF (4K)", data=buf_front, file_name="tray_card_4K.pdf", mime="application/pdf")
+
+        combined_buf = io.BytesIO()
+        card_image.save(combined_buf, format="PDF", save_all=True, append_images=[card_back])
+        combined_buf.seek(0)
+
+        st.download_button(
+            "📥 Download Front + Back PDF",
+            data=combined_buf,
+            file_name="tray_card_combined.pdf",
+            mime="application/pdf"
+        )
