@@ -22,7 +22,7 @@ COLOR_PRIMARY = "#0f2c5d"
 COLOR_ACCENT = "#ea2f2f"
 BG_COLOR = "white"
 
-# === Paths ===
+# === Font Paths ===
 FONT_AR_BOLD = "assets/fonts/NotoSansArabic-SemiBold.ttf"
 FONT_AR_REGULAR = "assets/fonts/NotoSansArabic-Regular.ttf"
 FONT_EN_BOLD = "assets/fonts/PlusJakartaSans-Bold.ttf"
@@ -31,14 +31,14 @@ LOGO_QR = "assets/icons/qr_code.png"
 ICON_EMAIL = "assets/icons/email.png"
 ICON_PHONE = "assets/icons/phone.png"
 
-# === Load fonts ===
-def load_fonts(scale=1):
+# === Load Fonts ===
+def load_fonts(scale=1.0):
     return {
         "ar_name": ImageFont.truetype(FONT_AR_BOLD, int(130 * scale)),
         "ar_title": ImageFont.truetype(FONT_AR_REGULAR, int(72 * scale)),
         "en_name": ImageFont.truetype(FONT_EN_BOLD, int(130 * scale)),
         "en_title": ImageFont.truetype(FONT_EN_MEDIUM, int(72 * scale)),
-        "en_info": ImageFont.truetype(FONT_EN_MEDIUM, int(60 * scale))
+        "en_info": ImageFont.truetype(FONT_EN_MEDIUM, int(60 * scale)),
     }
 
 # === Load icons ===
