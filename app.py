@@ -1,100 +1,118 @@
+
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageOps
+import io
 import os
 
 # Constants
-W, H = 3508, 2480  # 300 DPI for 11.7in x 8.3in (A4 landscape)
+W_4K, H_4K = 3840, 2160
+W_PRINT, H_PRINT = 1063, 591  # 9x5 cm at 300 DPI
 MARGIN = 150
-QR_SIZE = 300
-ICON_SIZE = (48, 48)
+ICON_SIZE = (96, 96)
 ICON_GAP = 30
-LINE_SPACING = 60
-TEXT_COLOR = (20, 40, 80)
+LINE_SPACING = 120
+QR_SIZE = 600
 
-# Paths
-FONT_AR_REGULAR = "assets/fonts/NotoSansArabic-Regular.ttf"
+# Asset paths
 FONT_AR_BOLD = "assets/fonts/NotoSansArabic-SemiBold.ttf"
+FONT_AR_REGULAR = "assets/fonts/NotoSansArabic-Regular.ttf"
 FONT_EN_BOLD = "assets/fonts/PlusJakartaSans-Bold.ttf"
 FONT_EN_REGULAR = "assets/fonts/PlusJakartaSans-Regular.ttf"
 ICON_EMAIL = "assets/icons/email.png"
 ICON_PHONE = "assets/icons/phone.png"
-QR_IMAGE = "assets/icons/qr_code.png"
+QR_CODE = "assets/icons/qr_code.png"
+LOGO_BACK = "assets/icons/Tray_logo_white.png"
 
-# Loaders
+# Load font
 def load_font(path, size):
     if not os.path.exists(path):
         raise FileNotFoundError(f"Font file not found: {path}")
     return ImageFont.truetype(path, size)
 
-def load_img(path, size=None):
+# Load and resize image
+def load_img(path, size):
     img = Image.open(path).convert("RGBA")
-    if size:
-        img = img.resize(size, Image.LANCZOS)
+    img = img.resize(size, Image.Resampling.LANCZOS)
     return img
 
-# Generator
-def generate_card(ar_name, ar_title, en_name, en_title, email, phone):
-    card = Image.new("RGBA", (W, H), "white")
-    draw = ImageDraw.Draw(card)
+# Generate front face
+def generate_front(w, h, fonts):
+    img = Image.new("RGB", (w, h), "white")
+    draw = ImageDraw.Draw(img)
 
-    fonts = {
-        "ar_bold": load_font(FONT_AR_BOLD, 60),
-        "ar_regular": load_font(FONT_AR_REGULAR, 42),
-        "en_bold": load_font(FONT_EN_BOLD, 60),
-        "en_regular": load_font(FONT_EN_REGULAR, 42),
-    }
+    # User Inputs
+    ar_name = st.text_input("Arabic Name")
+    ar_title = st.text_input("Arabic Job Title")
+    en_name = st.text_input("English Name")
+    en_title = st.text_input("English Job Title")
+    email = st.text_input("Email")
+    phone = st.text_input("Phone")
 
+    # Coordinates
+    left_x = MARGIN
+    right_x = w - MARGIN
+    top_y = MARGIN
+
+    # Name positions
+    draw.text((left_x, top_y), en_name, font=fonts["en_bold"], fill="#001F4B")
+    draw.text((left_x, top_y + fonts["en_bold"].getsize(en_name)[1] + 10), en_title, font=fonts["en_regular"], fill="#001F4B")
+
+    ar_name_size = fonts["ar_bold"].getsize(ar_name)
+    ar_title_size = fonts["ar_regular"].getsize(ar_title)
+    draw.text((right_x - ar_name_size[0], top_y), ar_name, font=fonts["ar_bold"], fill="#001F4B")
+    draw.text((right_x - ar_title_size[0], top_y + ar_name_size[1] + 10), ar_title, font=fonts["ar_regular"], fill="#001F4B")
+
+    # Icons
     icon_email = load_img(ICON_EMAIL, ICON_SIZE)
     icon_phone = load_img(ICON_PHONE, ICON_SIZE)
-    qr = load_img(QR_IMAGE, (QR_SIZE, QR_SIZE))
 
-    # Top Left (EN)
-    en_x = MARGIN
-    en_y = MARGIN
-    draw.text((en_x, en_y), en_name, font=fonts["en_bold"], fill=TEXT_COLOR)
-    en_y += fonts["en_bold"].getbbox(en_name)[3] + 10
-    draw.text((en_x, en_y), en_title, font=fonts["en_regular"], fill=TEXT_COLOR)
-
-    # Top Right (AR)
-    ar_name_bbox = fonts["ar_bold"].getbbox(ar_name)
-    ar_title_bbox = fonts["ar_regular"].getbbox(ar_title)
-    ar_x = W - MARGIN
-    ar_name_y = MARGIN
-    ar_title_y = ar_name_y + ar_name_bbox[3] + 10
-    draw.text((ar_x, ar_name_y), ar_name, font=fonts["ar_bold"], fill=TEXT_COLOR, anchor="ra")
-    draw.text((ar_x, ar_title_y), ar_title, font=fonts["ar_regular"], fill=TEXT_COLOR, anchor="ra")
-
-    # Bottom Left (contact info)
-    contact_y = H - MARGIN - ICON_SIZE[1]*2 - LINE_SPACING
-    draw.bitmap((MARGIN, contact_y), icon_email, fill=None)
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + (ICON_SIZE[1] - fonts["en_regular"].getbbox(email)[3]) // 2),
-              email, font=fonts["en_regular"], fill=TEXT_COLOR)
+    contact_y = h - MARGIN - (ICON_SIZE[1] * 2 + LINE_SPACING)
+    img.paste(icon_email, (left_x, contact_y), icon_email)
+    draw.text((left_x + ICON_SIZE[0] + ICON_GAP, contact_y + 20), email, font=fonts["en_regular"], fill="#001F4B")
 
     contact_y += ICON_SIZE[1] + LINE_SPACING
-    draw.bitmap((MARGIN, contact_y), icon_phone, fill=None)
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + (ICON_SIZE[1] - fonts["en_regular"].getbbox(phone)[3]) // 2),
-              phone, font=fonts["en_regular"], fill=TEXT_COLOR)
+    img.paste(icon_phone, (left_x, contact_y), icon_phone)
+    draw.text((left_x + ICON_SIZE[0] + ICON_GAP, contact_y + 20), phone, font=fonts["en_regular"], fill="#001F4B")
 
-    # Bottom Right (QR)
-    card.paste(qr, (W - MARGIN - QR_SIZE, H - MARGIN - QR_SIZE), mask=qr)
-    return card
+    # QR code
+    qr = load_img(QR_CODE, (QR_SIZE, QR_SIZE))
+    img.paste(qr, (w - MARGIN - QR_SIZE, h - MARGIN - QR_SIZE), qr)
 
-# Streamlit App
+    return img
+
+# Generate back face
+def generate_back(w, h):
+    img = Image.new("RGB", (w, h), "#ea2f2f")
+    logo = load_img(LOGO_BACK, (1300, 1300))
+    img.paste(logo, ((w - logo.width) // 2, (h - logo.height) // 2), logo)
+    return img
+
+# Load fonts
+fonts = {
+    "ar_bold": load_font(FONT_AR_BOLD, 96),
+    "ar_regular": load_font(FONT_AR_REGULAR, 64),
+    "en_bold": load_font(FONT_EN_BOLD, 96),
+    "en_regular": load_font(FONT_EN_REGULAR, 64),
+}
+
+# Streamlit UI
 st.title("🔍 Preview (Front)")
-ar_name = st.text_input("Arabic Name", "")
-ar_title = st.text_input("Arabic Job Title", "")
-en_name = st.text_input("English Name", "")
-en_title = st.text_input("English Job Title", "")
-email = st.text_input("Email", "")
-phone = st.text_input("Phone", "")
+tab1, tab2 = st.tabs(["Front Face", "Back Face"])
 
-if ar_name and ar_title and en_name and en_title and email and phone:
-    card_image = generate_card(ar_name, ar_title, en_name, en_title, email, phone)
-    st.image(card_image)
+with tab1:
+    card_front = generate_front(W_4K, H_4K, fonts)
 
-    from io import BytesIO
-    pdf_output = BytesIO()
-    card_image.save(pdf_output, format="PDF", resolution=300)
-    st.download_button("📥 Download PDF", pdf_output.getvalue(), file_name="tray_card_4K.pdf")
-else:
-    st.warning("Please fill in all the fields to generate your card.")
+    buf = io.BytesIO()
+    card_front.save(buf, format="PDF")
+    st.download_button("📥 Download Front PDF (4K)", data=buf.getvalue(), file_name="tray_card_4K.pdf")
+
+    st.image(card_front)
+
+with tab2:
+    card_back = generate_back(W_4K, H_4K)
+
+    buf = io.BytesIO()
+    card_back.save(buf, format="PDF")
+    st.download_button("📥 Download Back PDF", data=buf.getvalue(), file_name="tray_card_back.pdf")
+
+    st.image(card_back)
