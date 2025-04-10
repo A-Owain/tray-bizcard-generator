@@ -71,6 +71,17 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
 
     return img
 
+# Back face generator
+def generate_back(w, h):
+    img = Image.new("RGB", (w, h), "#ea2f2f")
+    logo_path = "assets/icons/tray_logo_white.png"
+    if not os.path.exists(logo_path):
+        st.error(f"⚠️ Logo not found at: {logo_path}")
+        return img
+    logo = load_img(logo_path, (1300, 1300))
+    img.paste(logo, ((w - logo.width) // 2, (h - logo.height) // 2), logo)
+    return img
+
 # Streamlit app
 st.set_page_config(layout="centered")
 st.title("\U0001F50D Preview (Front)")
@@ -90,11 +101,21 @@ fonts = {
 }
 
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
-    card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
-    st.image(card_image)
+    tab1, tab2 = st.tabs(["Front Face", "Back Face"])
 
-    # Export to PDF
-    buf = io.BytesIO()
-    card_image.save(buf, format="PDF")
-    buf.seek(0)
-    st.download_button("\U0001F4C5 Download Front PDF (4K)", data=buf, file_name="tray_card_4K.pdf", mime="application/pdf")
+    with tab1:
+        card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
+        st.image(card_image)
+        buf_front = io.BytesIO()
+        card_image.save(buf_front, format="PDF")
+        buf_front.seek(0)
+        st.download_button("📅 Download Front PDF (4K)", data=buf_front, file_name="tray_card_4K.pdf", mime="application/pdf")
+
+    with tab2:
+        card_back = generate_back(W_4K, H_4K)
+        st.image(card_back)
+        buf_back = io.BytesIO()
+        card_back.save(buf_back, format="PDF")
+        buf_back.seek(0)
+        st.download_button("📅 Download Back PDF", data=buf_back, file_name="tray_card_back.pdf", mime="application/pdf")
+"\U0001F4C5 Download Front PDF (4K)", data=buf, file_name="tray_card_4K.pdf", mime="application/pdf")
