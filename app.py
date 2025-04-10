@@ -118,4 +118,4 @@ if all([ar_name, ar_title, en_name, en_title, email, phone]):
         card_back.save(buf_back, format="PDF")
         buf_back.seek(0)
         st.download_button("📅 Download Back PDF", data=buf_back, file_name="tray_card_back.pdf", mime="application/pdf")
-"\U0001F4C5 Download Front PDF (4K)", data=buf, file_name="tray_card_4K.pdf", mime="application/pdf")
+st.download_button("📥 Download Front PDF (4K)", data=buf, file_name="tray_card_4K.pdf", mime="application/pdf")
