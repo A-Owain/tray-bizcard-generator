@@ -11,7 +11,7 @@ MARGIN = 150
 QR_SIZE = 600
 ICON_SIZE = (96, 96)
 ICON_GAP = 30
-LINE_SPACING = 120
+LINE_SPACING = 50
 
 # Paths
 FONT_AR_REGULAR = "assets/fonts/NotoSansArabic-Regular.ttf"
