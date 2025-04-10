@@ -54,7 +54,7 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
 
     AR_Y_OFFSET = -96
     draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET), ar_name, font=fonts["ar_bold"], fill="#001F4B", anchor="ra")
-    draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET + 220), ar_title, font=fonts["ar_regular"], fill="#001F4B", anchor="ra")
+    draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET + 240), ar_title, font=fonts["ar_regular"], fill="#001F4B", anchor="ra")
 
     contact_y = h - MARGIN - ICON_SIZE[1]*2 - LINE_SPACING
     img.paste(icon_email, (MARGIN, contact_y), icon_email)
