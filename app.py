@@ -1,119 +1,106 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-import io
+from io import BytesIO
 import os
 
-# === Constants ===
-CM = 118.11  # pixels per cm for 300 DPI
-WIDTH_CM = 9
-HEIGHT_CM = 5
-W_PRINT = int(WIDTH_CM * CM)
-H_PRINT = int(HEIGHT_CM * CM)
-W_4K = 3840
-H_4K = 2160
+# Constants
+CARD_WIDTH, CARD_HEIGHT = 1050, 600  # 9x5 cm at 300dpi
 MARGIN = 150
-QR_SIZE = 600
-ICON_SIZE = (96, 96)
+ICON_SIZE = 96
+GAP_BETWEEN_LINES = 120
 ICON_GAP = 40
-CONTACT_SPACING = 120
+QR_SIZE = 600
 
-# === Colors ===
-COLOR_PRIMARY = "#0f2c5d"
-COLOR_ACCENT = "#ea2f2f"
-BG_COLOR = "white"
+# Fonts
+FONT_AR_BOLD = "assets/fonts/NotoSansArabic-SemiBold.ttf"
+FONT_AR_REG = "assets/fonts/NotoSansArabic-Regular.ttf"
+FONT_EN_BOLD = "assets/fonts/PlusJakartaSans-Bold.ttf"
+FONT_EN_REG = "assets/fonts/PlusJakartaSans-Medium.ttf"
 
-# === Load fonts from root (uploaded fonts) ===
-def load_fonts(scale=1):
-    return {
-        "ar_name": ImageFont.truetype("NotoSansArabic-SemiBold.ttf", int(130 * scale)),
-        "ar_title": ImageFont.truetype("NotoSansArabic-Regular.ttf", int(72 * scale)),
-        "en_name": ImageFont.truetype("PlusJakartaSans-Bold.ttf", int(130 * scale)),
-        "en_title": ImageFont.truetype("PlusJakartaSans-Medium.ttf", int(72 * scale)),
-        "en_info": ImageFont.truetype("PlusJakartaSans-Medium.ttf", int(60 * scale))
-    }
+# Assets
+ICON_EMAIL = "assets/icons/email.png"
+ICON_PHONE = "assets/icons/phone.png"
+QR_CODE = "assets/icons/qr_code.png"
 
-# === Load icon ===
-def load_img(path, size):
+def load_font(path, size):
+    return ImageFont.truetype(path, size)
+
+def load_img(path, size=None):
     img = Image.open(path).convert("RGBA")
-    return img.resize(size, Image.LANCZOS)
+    return img.resize(size, Image.LANCZOS) if size else img
 
-# === Generate Front ===
-def generate_front(canvas_width, canvas_height, fonts):
-    canvas = Image.new("RGB", (canvas_width, canvas_height), BG_COLOR)
+def draw_contact_line(draw, canvas, icon, text, x, y, font):
+    canvas.paste(icon, (x, y), mask=icon)
+    text_height = font.getsize(text)[1]
+    text_y = y + (ICON_SIZE - text_height) // 2
+    draw.text((x + ICON_SIZE + ICON_GAP, text_y), text, font=font, fill="#0F254F")
+
+def generate_front(width, height, fonts, ar_name, ar_title, en_name, en_title, email, phone):
+    canvas = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(canvas)
 
-    # Inputs
-    ar_name = st.session_state.get("ar_name", "عبدالله رجب")
-    ar_title = st.session_state.get("ar_title", "مدير تطوير الأعمال")
-    en_name = st.session_state.get("en_name", "Abdullah Rajab")
-    en_title = st.session_state.get("en_title", "Business Development Manager")
-    email = st.session_state.get("email", "abdullah.rajab@alraedahdigital.sa")
-    phone = st.session_state.get("phone", "+966 59 294 8994")
+    # Positions
+    ar_name_pos = (width - MARGIN, MARGIN)
+    ar_title_pos = (width - MARGIN, MARGIN + 100)
+    en_name_pos = (MARGIN, MARGIN)
+    en_title_pos = (MARGIN, MARGIN + 100)
 
-    # --- Top Left ---
-    draw.text((MARGIN, MARGIN), en_name, font=fonts["en_name"], fill=COLOR_PRIMARY)
-    draw.text((MARGIN, MARGIN + fonts["en_name"].getsize(en_name)[1] + 10), en_title, font=fonts["en_title"], fill=COLOR_PRIMARY)
+    # English text
+    draw.text(en_name_pos, en_name, font=fonts["en_bold"], fill="#0F254F")
+    draw.text(en_title_pos, en_title, font=fonts["en_reg"], fill="#0F254F")
 
-    # --- Top Right ---
-    ar_name_size = fonts["ar_name"].getsize(ar_name)
-    ar_title_size = fonts["ar_title"].getsize(ar_title)
-    x_ar = canvas_width - MARGIN - max(ar_name_size[0], ar_title_size[0])
-    y_ar = MARGIN + 20
-    draw.text((x_ar, y_ar), ar_name, font=fonts["ar_name"], fill=COLOR_PRIMARY)
-    draw.text((x_ar, y_ar + ar_name_size[1] + 10), ar_title, font=fonts["ar_title"], fill=COLOR_PRIMARY)
+    # Arabic text (right-aligned)
+    ar_name_w, _ = draw.textsize(ar_name, font=fonts["ar_bold"])
+    ar_title_w, _ = draw.textsize(ar_title, font=fonts["ar_reg"])
+    draw.text((ar_name_pos[0] - ar_name_w, ar_name_pos[1]), ar_name, font=fonts["ar_bold"], fill="#0F254F")
+    draw.text((ar_title_pos[0] - ar_title_w, ar_title_pos[1]), ar_title, font=fonts["ar_reg"], fill="#0F254F")
 
-    # --- Bottom Right (QR) ---
-    qr = load_img("assets/icons/qr_code.png", (QR_SIZE, QR_SIZE))
-    canvas.paste(qr, (canvas_width - MARGIN - QR_SIZE, canvas_height - MARGIN - QR_SIZE), qr)
+    # Icons & contact
+    icon_email = load_img(ICON_EMAIL, (ICON_SIZE, ICON_SIZE))
+    icon_phone = load_img(ICON_PHONE, (ICON_SIZE, ICON_SIZE))
 
-    # --- Bottom Left (Contact Info) ---
-    icon_email = load_img("assets/icons/email.png", ICON_SIZE)
-    icon_phone = load_img("assets/icons/phone.png", ICON_SIZE)
+    contact_start_y = height - MARGIN - (2 * ICON_SIZE) - GAP_BETWEEN_LINES
+    draw_contact_line(draw, canvas, icon_email, email, MARGIN, contact_start_y, fonts["info"])
+    draw_contact_line(draw, canvas, icon_phone, phone, MARGIN, contact_start_y + ICON_SIZE + GAP_BETWEEN_LINES, fonts["info"])
 
-    email_text_height = fonts["en_info"].getsize(email)[1]
-    phone_text_height = fonts["en_info"].getsize(phone)[1]
-    email_text_offset = (ICON_SIZE[1] - email_text_height) // 2
-    phone_text_offset = (ICON_SIZE[1] - phone_text_height) // 2
-
-    x_contact = MARGIN
-    y_email = canvas_height - MARGIN - ICON_SIZE[1] * 2 - CONTACT_SPACING
-    y_phone = y_email + ICON_SIZE[1] + CONTACT_SPACING
-
-    canvas.paste(icon_email, (x_contact, y_email), mask=icon_email)
-    draw.text((x_contact + ICON_SIZE[0] + ICON_GAP, y_email + email_text_offset), email, font=fonts["en_info"], fill=COLOR_PRIMARY)
-
-    canvas.paste(icon_phone, (x_contact, y_phone), mask=icon_phone)
-    draw.text((x_contact + ICON_SIZE[0] + ICON_GAP, y_phone + phone_text_offset), phone, font=fonts["en_info"], fill=COLOR_PRIMARY)
+    # QR
+    qr = load_img(QR_CODE, (QR_SIZE, QR_SIZE))
+    canvas.paste(qr, (width - MARGIN - QR_SIZE, height - MARGIN - QR_SIZE), mask=qr)
 
     return canvas
 
-# === Save to PDF ===
-def save_as_pdf(img):
-    buf = io.BytesIO()
-    img.save(buf, format="PDF", resolution=300.0)
-    return buf
-
-# === Streamlit UI ===
+# Streamlit UI
 st.set_page_config(layout="wide")
-st.title("📇 Preview (Front)")
+st.title("🔍 Preview (Front)")
 
+# Form inputs
 with st.sidebar:
-    st.header("📸 معلومات البطاقة")
-    st.text_input("الاسم بالعربية", "عبدالله رجب", key="ar_name")
-    st.text_input("المسمى بالعربية", "مدير تطوير الأعمال", key="ar_title")
-    st.text_input("Full Name", "Abdullah Rajab", key="en_name")
-    st.text_input("Job Title", "Business Development Manager", key="en_title")
-    st.text_input("Email", "abdullah.rajab@alraedahdigital.sa", key="email")
-    st.text_input("Phone", "+966 59 294 8994", key="phone")
+    st.header("📇 معلومات البطاقة")
+    ar_name = st.text_input("الاسم بالعربية", "")
+    ar_title = st.text_input("المسمى بالعربية", "")
+    en_name = st.text_input("Full Name", "")
+    en_title = st.text_input("Job Title", "")
+    email = st.text_input("Email", "")
+    phone = st.text_input("Phone", "")
 
-fonts_4k = load_fonts(scale=1.0)
-front_4k = generate_front(W_4K, H_4K, fonts_4k)
-buf_4k = save_as_pdf(front_4k)
-st.download_button("📥 Download tray_card_4K.pdf", data=buf_4k, file_name="tray_card_4K.pdf")
+# Load fonts
+fonts = {
+    "ar_bold": load_font(FONT_AR_BOLD, 96),
+    "ar_reg": load_font(FONT_AR_REG, 60),
+    "en_bold": load_font(FONT_EN_BOLD, 96),
+    "en_reg": load_font(FONT_EN_REG, 60),
+    "info": load_font(FONT_EN_REG, 56),
+}
 
-fonts_print = load_fonts(scale=W_PRINT / W_4K)
-front_print = generate_front(W_PRINT, H_PRINT, fonts_print)
-buf_print = save_as_pdf(front_print)
-st.download_button("📥 Download tray_card_print.pdf", data=buf_print, file_name="tray_card_print.pdf")
+# Generate image
+front_img = generate_front(CARD_WIDTH, CARD_HEIGHT, fonts, ar_name, ar_title, en_name, en_title, email, phone)
+st.image(front_img)
 
-st.image(front_4k, caption="Preview", use_column_width=True)
+# PDF download
+def save_as_pdf(image, filename):
+    buf = BytesIO()
+    image.save(buf, format="PDF", resolution=300.0)
+    st.download_button(f"📥 {filename}", buf.getvalue(), file_name=filename, mime="application/pdf")
+
+save_as_pdf(front_img, "tray_card_4K.pdf")
+save_as_pdf(front_img, "tray_card_print.pdf")
