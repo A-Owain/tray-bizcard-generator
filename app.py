@@ -80,7 +80,7 @@ def generate_back(w, h):
 
 # Streamlit app
 st.set_page_config(layout="centered")
-st.title("🖼️ Business Card Generator")
+st.title("Business Card Generator")
 
 # Inputs
 ar_name = st.text_input("Arabic Name", "")
