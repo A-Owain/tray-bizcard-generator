@@ -100,12 +100,14 @@ with tab1:
     card_front = generate_front(W_4K, H_4K, fonts)
     buf = io.BytesIO()
     card_front.save(buf, format="PDF")
-    st.download_button("\U0001F4C5 Download Front PDF (4K)", data=buf.getvalue(), file_name="tray_card_4K.pdf")
+    buf.seek(0)
+    st.download_button("\U0001F4C5 Download Front PDF (4K)", data=buf, file_name="tray_card_4K.pdf", mime="application/pdf")
     st.image(card_front)
 
 with tab2:
     card_back = generate_back(W_4K, H_4K)
     buf = io.BytesIO()
     card_back.save(buf, format="PDF")
-    st.download_button("\U0001F4C5 Download Back PDF", data=buf.getvalue(), file_name="tray_card_back.pdf")
+    buf.seek(0)
+    st.download_button("\U0001F4C5 Download Back PDF", data=buf, file_name="tray_card_back.pdf", mime="application/pdf")
     st.image(card_back)
