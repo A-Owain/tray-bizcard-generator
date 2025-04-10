@@ -1,4 +1,3 @@
-
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import io
@@ -53,16 +52,15 @@ def generate_front(w, h, fonts):
     right_x = w - MARGIN
     top_y = MARGIN
 
-    # Name positions
+    en_name_height = fonts["en_bold"].getbbox(en_name)[3]
     draw.text((left_x, top_y), en_name, font=fonts["en_bold"], fill="#001F4B")
-    draw.text((left_x, top_y + fonts["en_bold"].getsize(en_name)[1] + 10), en_title, font=fonts["en_regular"], fill="#001F4B")
+    draw.text((left_x, top_y + en_name_height + 10), en_title, font=fonts["en_regular"], fill="#001F4B")
 
-    ar_name_size = fonts["ar_bold"].getsize(ar_name)
-    ar_title_size = fonts["ar_regular"].getsize(ar_title)
-    draw.text((right_x - ar_name_size[0], top_y), ar_name, font=fonts["ar_bold"], fill="#001F4B")
-    draw.text((right_x - ar_title_size[0], top_y + ar_name_size[1] + 10), ar_title, font=fonts["ar_regular"], fill="#001F4B")
+    ar_name_bbox = fonts["ar_bold"].getbbox(ar_name)
+    ar_title_bbox = fonts["ar_regular"].getbbox(ar_title)
+    draw.text((right_x - ar_name_bbox[2], top_y), ar_name, font=fonts["ar_bold"], fill="#001F4B")
+    draw.text((right_x - ar_title_bbox[2], top_y + ar_name_bbox[3] + 10), ar_title, font=fonts["ar_regular"], fill="#001F4B")
 
-    # Icons
     icon_email = load_img(ICON_EMAIL, ICON_SIZE)
     icon_phone = load_img(ICON_PHONE, ICON_SIZE)
 
@@ -74,7 +72,6 @@ def generate_front(w, h, fonts):
     img.paste(icon_phone, (left_x, contact_y), icon_phone)
     draw.text((left_x + ICON_SIZE[0] + ICON_GAP, contact_y + 20), phone, font=fonts["en_regular"], fill="#001F4B")
 
-    # QR code
     qr = load_img(QR_CODE, (QR_SIZE, QR_SIZE))
     img.paste(qr, (w - MARGIN - QR_SIZE, h - MARGIN - QR_SIZE), qr)
 
@@ -96,23 +93,19 @@ fonts = {
 }
 
 # Streamlit UI
-st.title("🔍 Preview (Front)")
+st.title("\U0001F50D Preview (Front)")
 tab1, tab2 = st.tabs(["Front Face", "Back Face"])
 
 with tab1:
     card_front = generate_front(W_4K, H_4K, fonts)
-
     buf = io.BytesIO()
     card_front.save(buf, format="PDF")
-    st.download_button("📥 Download Front PDF (4K)", data=buf.getvalue(), file_name="tray_card_4K.pdf")
-
+    st.download_button("\U0001F4C5 Download Front PDF (4K)", data=buf.getvalue(), file_name="tray_card_4K.pdf")
     st.image(card_front)
 
 with tab2:
     card_back = generate_back(W_4K, H_4K)
-
     buf = io.BytesIO()
     card_back.save(buf, format="PDF")
-    st.download_button("📥 Download Back PDF", data=buf.getvalue(), file_name="tray_card_back.pdf")
-
+    st.download_button("\U0001F4C5 Download Back PDF", data=buf.getvalue(), file_name="tray_card_back.pdf")
     st.image(card_back)
