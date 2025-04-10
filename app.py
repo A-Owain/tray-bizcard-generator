@@ -57,11 +57,11 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
 
     contact_y = h - MARGIN - ICON_SIZE[1]*2 - LINE_SPACING
     img.paste(icon_email, (MARGIN, contact_y), icon_email)
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + 10), email, font=fonts["en_regular"], fill="#001F4B")
+    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + 0), email, font=fonts["en_regular"], fill="#001F4B")
 
     contact_y += ICON_SIZE[1] + LINE_SPACING
     img.paste(icon_phone, (MARGIN, contact_y), icon_phone)
-    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + 10), phone, font=fonts["en_regular"], fill="#001F4B")
+    draw.text((MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + 0), phone, font=fonts["en_regular"], fill="#001F4B")
 
     img.paste(qr_code, (w - MARGIN - QR_SIZE, h - MARGIN - QR_SIZE), qr_code)
 
