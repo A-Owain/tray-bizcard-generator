@@ -1,4 +1,3 @@
-
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import arabic_reshaper
@@ -91,10 +90,10 @@ email = st.text_input("Email", "")
 phone = st.text_input("Phone", "")
 
 fonts = {
-    "ar_bold": load_font(FONT_AR_BOLD, 96),
-    "ar_regular": load_font(FONT_AR_REGULAR, 72),
-    "en_bold": load_font(FONT_EN_BOLD, 96),
-    "en_regular": load_font(FONT_EN_REGULAR, 72),
+    "ar_bold": load_font(..., 144),
+    "en_bold": load_font(..., 144),
+    "ar_regular": load_font(..., 96),
+    "en_regular": load_font(..., 96),
 }
 
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
