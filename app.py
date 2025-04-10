@@ -52,9 +52,9 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
     draw.text((MARGIN, MARGIN), en_name, font=fonts["en_bold"], fill="#001F4B")
     draw.text((MARGIN, MARGIN + 110), en_title, font=fonts["en_regular"], fill="#001F4B")
 
-    # Top Right (Arabic)
-    draw.text((w - MARGIN, MARGIN), ar_name, font=fonts["ar_bold"], fill="#001F4B", anchor="ra")
-    draw.text((w - MARGIN, MARGIN + 110), ar_title, font=fonts["ar_regular"], fill="#001F4B", anchor="ra")
+    AR_Y_OFFSET = -30  # move up by 30 pixels
+    draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET), ar_name, font=fonts["ar_bold"], fill="#001F4B", anchor="ra")
+    draw.text((w - MARGIN, MARGIN + AR_Y_OFFSET + 110), ar_title, font=fonts["ar_regular"], fill="#001F4B", anchor="ra")
 
     # Bottom Left
     contact_y = h - MARGIN - ICON_SIZE[1]*2 - LINE_SPACING
