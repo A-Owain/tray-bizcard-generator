@@ -48,7 +48,7 @@ def generate_front(w, h, fonts, ar_name, ar_title, en_name, en_title, email, pho
     ar_name = reshape_arabic(ar_name)
     ar_title = reshape_arabic(ar_title)
 
-    EN_Y_OFFSET = -75  # or -20, -50, etc.
+    EN_Y_OFFSET = -50  # or -20, -50, etc.
     draw.text((MARGIN, MARGIN + EN_Y_OFFSET), en_name, font=fonts["en_bold"], fill="#001F4B")
     draw.text((MARGIN, MARGIN + EN_Y_OFFSET + 220), en_title, font=fonts["en_regular"], fill="#001F4B")
 
