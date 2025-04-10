@@ -79,7 +79,7 @@ def generate_back(w, h):
     if not os.path.exists(LOGO_BACK):
         st.error(f"⚠️ Logo not found at: {LOGO_BACK}")
         return img
-    logo = load_img(LOGO_BACK, (1300, 1300))
+    logo = load_img(LOGO_BACK, (1300, ))
     img.paste(logo, ((w - logo.width) // 2, (h - logo.height) // 2), logo)
     return img
 
