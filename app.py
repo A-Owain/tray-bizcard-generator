@@ -1,107 +1,118 @@
+
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-import io
 import os
 
-# ========== CONFIG ==========
-CARD_WIDTH = 1050
-CARD_HEIGHT = 600
+# Constants
+CARD_WIDTH = 1440
+CARD_HEIGHT = 800
 MARGIN = 150
-ICON_SIZE = 96
-ICON_GAP = 60
-GAP_BETWEEN_LINES = 120
-QR_SIZE = 300
-TEXT_COLOR = (20, 45, 78)
+QR_SIZE = 600
+ICON_SIZE = (96, 96)
+GAP_BETWEEN_LINES = 90
+ICON_GAP = 40
 
-# ========== ASSETS ==========
-FONT_AR_BOLD = "assets/fonts/NotoSansArabic-Bold.ttf"
+# Font paths
+FONT_AR_BOLD = "assets/fonts/NotoSansArabic-SemiBold.ttf"
 FONT_AR_REGULAR = "assets/fonts/NotoSansArabic-Regular.ttf"
 FONT_EN_BOLD = "assets/fonts/PlusJakartaSans-Bold.ttf"
 FONT_EN_REGULAR = "assets/fonts/PlusJakartaSans-Regular.ttf"
-ICON_EMAIL_PATH = "assets/icons/email.png"
-ICON_PHONE_PATH = "assets/icons/phone.png"
-QR_CODE_PATH = "assets/qr_code.png"
 
-# ========== HELPERS ==========
+# Load font
 def load_font(path, size):
     if not os.path.exists(path):
-        st.error(f"❌ Font file missing: {path}")
         raise FileNotFoundError(f"Font file not found: {path}")
     return ImageFont.truetype(path, size)
 
+# Load image
 def load_img(path, size=None):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Image file not found: {path}")
     img = Image.open(path).convert("RGBA")
     if size:
-        img = img.resize(size, Image.ANTIALIAS)
+        img = img.resize(size, Image.LANCZOS)
     return img
 
-def draw_contact_line(draw, canvas, icon, text, x, y, font):
-    canvas.paste(icon, (x, y), mask=icon)
-    text_height = font.getbbox(text)[3] - font.getbbox(text)[1]
-    text_y = y + ICON_SIZE - text_height
-    draw.text((x + ICON_SIZE + ICON_GAP, text_y), text, font=font, fill=TEXT_COLOR)
-
-# ========== CARD GENERATOR ==========
+# Generate card
 def generate_card(ar_name, ar_title, en_name, en_title, email, phone):
-    canvas = Image.new("RGB", (CARD_WIDTH, CARD_HEIGHT), "white")
-    draw = ImageDraw.Draw(canvas)
+    img = Image.new("RGB", (CARD_WIDTH, CARD_HEIGHT), "white")
+    draw = ImageDraw.Draw(img)
 
     fonts = {
         "ar_bold": load_font(FONT_AR_BOLD, 96),
-        "ar_reg": load_font(FONT_AR_REGULAR, 60),
+        "ar_regular": load_font(FONT_AR_REGULAR, 60),
         "en_bold": load_font(FONT_EN_BOLD, 96),
-        "en_reg": load_font(FONT_EN_REGULAR, 60),
-        "info": load_font(FONT_EN_REGULAR, 56),
+        "en_regular": load_font(FONT_EN_REGULAR, 60),
     }
 
-    name_top = MARGIN
-    draw.text((MARGIN, name_top), en_name, font=fonts["en_bold"], fill=TEXT_COLOR)
-    draw.text((MARGIN, name_top + 105), en_title, font=fonts["en_reg"], fill=TEXT_COLOR)
-    draw.text((CARD_WIDTH - MARGIN, name_top), ar_name, font=fonts["ar_bold"], fill=TEXT_COLOR, anchor="ra")
-    draw.text((CARD_WIDTH - MARGIN, name_top + 105), ar_title, font=fonts["ar_reg"], fill=TEXT_COLOR, anchor="ra")
+    # Top right: Arabic
+    ar_name_size = draw.textsize(ar_name, font=fonts["ar_bold"])
+    ar_title_size = draw.textsize(ar_title, font=fonts["ar_regular"])
+    ar_name_pos = (CARD_WIDTH - MARGIN - ar_name_size[0], MARGIN)
+    ar_title_pos = (CARD_WIDTH - MARGIN - ar_title_size[0], ar_name_pos[1] + ar_name_size[1] + 5)
 
-    # Contact Info
-    email_icon = load_img(ICON_EMAIL_PATH, ICON_SIZE)
-    phone_icon = load_img(ICON_PHONE_PATH, ICON_SIZE)
-    contact_y = CARD_HEIGHT - MARGIN - (2 * ICON_SIZE) - GAP_BETWEEN_LINES
-    draw_contact_line(draw, canvas, email_icon, email, MARGIN, contact_y, fonts["info"])
-    draw_contact_line(draw, canvas, phone_icon, phone, MARGIN, contact_y + ICON_SIZE + GAP_BETWEEN_LINES, fonts["info"])
+    draw.text(ar_name_pos, ar_name, font=fonts["ar_bold"], fill="#0f254c")
+    draw.text(ar_title_pos, ar_title, font=fonts["ar_regular"], fill="#0f254c")
 
-    # QR
-    qr_code = load_img(QR_CODE_PATH, (QR_SIZE, QR_SIZE))
-    canvas.paste(qr_code, (CARD_WIDTH - MARGIN - QR_SIZE, CARD_HEIGHT - MARGIN - QR_SIZE), qr_code)
+    # Top left: English
+    en_name_pos = (MARGIN, MARGIN)
+    en_title_pos = (MARGIN, en_name_pos[1] + ar_name_size[1] + 5)
 
-    return canvas
+    draw.text(en_name_pos, en_name, font=fonts["en_bold"], fill="#0f254c")
+    draw.text(en_title_pos, en_title, font=fonts["en_regular"], fill="#0f254c")
 
-# ========== STREAMLIT UI ==========
-st.set_page_config(layout="centered", page_title="TRAY Business Card Generator")
+    # Bottom right: QR
+    qr = load_img("assets/icons/qr_code.png")
+    qr = ImageOps.contain(qr, (QR_SIZE, QR_SIZE))
+    qr_pos = (CARD_WIDTH - MARGIN - qr.width, CARD_HEIGHT - MARGIN - qr.height)
+    img.paste(qr, qr_pos, qr)
 
-st.title("📇 TRAY Business Card Generator")
+    # Bottom left: contact info
+    icon_email = load_img("assets/icons/email.png", ICON_SIZE)
+    icon_phone = load_img("assets/icons/phone.png", ICON_SIZE)
 
-# Input Form
-with st.sidebar:
-    st.header("📝 Enter Card Info")
-    ar_name = st.text_input("Arabic Name", "")
-    ar_title = st.text_input("Arabic Title", "")
-    en_name = st.text_input("English Name", "")
-    en_title = st.text_input("English Title", "")
+    contact_font = fonts["en_regular"]
+    contact_y = CARD_HEIGHT - MARGIN - ICON_SIZE[1] * 2 - GAP_BETWEEN_LINES
+
+    # Email
+    img.paste(icon_email, (MARGIN, contact_y), icon_email)
+    draw.text(
+        (MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + (ICON_SIZE[1] - contact_font.getsize(email)[1]) // 2),
+        email,
+        font=contact_font,
+        fill="#0f254c",
+    )
+
+    # Phone
+    contact_y += ICON_SIZE[1] + GAP_BETWEEN_LINES
+    img.paste(icon_phone, (MARGIN, contact_y), icon_phone)
+    draw.text(
+        (MARGIN + ICON_SIZE[0] + ICON_GAP, contact_y + (ICON_SIZE[1] - contact_font.getsize(phone)[1]) // 2),
+        phone,
+        font=contact_font,
+        fill="#0f254c",
+    )
+
+    return img
+
+# Streamlit UI
+st.title("🔍 Preview (Front)")
+
+with st.form("card_info"):
+    ar_name = st.text_input("الاسم بالعربية", "")
+    ar_title = st.text_input("المسمى الوظيفي بالعربية", "")
+    en_name = st.text_input("Full Name", "")
+    en_title = st.text_input("Job Title", "")
     email = st.text_input("Email", "")
     phone = st.text_input("Phone", "")
 
-card_image = generate_card(ar_name, ar_title, en_name, en_title, email, phone)
+    submitted = st.form_submit_button("Generate Card")
 
-st.subheader("🔍 Card Preview")
-st.image(card_image)
+if submitted:
+    card_image = generate_card(ar_name, ar_title, en_name, en_title, email, phone)
 
-# PDF Download
-def download_pdf(image, filename):
-    buffer = io.BytesIO()
-    image.save(buffer, format="PDF", resolution=300)
-    st.download_button(
-        label=f"📥 Download {filename}",
-        data=buffer.getvalue(),
-        file_name=filename,
-        mime="application/pdf"
-    )
+    st.image(card_image, caption="Business Card Preview", use_column_width=True)
 
-download_pdf(card_image, "tray_card_print.pdf")
+    # Save as 4K
+    card_image.save("tray_card_4K.pdf", "PDF", resolution=300)
+    st.download_button("⬇️ tray_card_4K.pdf", data=open("tray_card_4K.pdf", "rb"), file_name="tray_card_4K.pdf")
