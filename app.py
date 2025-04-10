@@ -105,13 +105,6 @@ fonts = {
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
     tab1, tab2 = st.tabs(["Front Face", "Back Face"])
 
-    with tab1:
-        card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
-        st.image(card_image)
-        buf_front = io.BytesIO()
-        card_image.save(buf_front, format="PDF")
-        buf_front.seek(0)
-        st.download_button("📥 Download Front PDF (4K)", data=buf_front, file_name="tray_card_4K.pdf", mime="application/pdf")
 
     with tab1:
         card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
@@ -126,11 +119,3 @@ if all([ar_name, ar_title, en_name, en_title, email, phone]):
         pdf_buf.seek(0)
 
         st.download_button("📥 Download Front + Back PDF", data=pdf_buf, file_name="tray_card_combined.pdf", mime="application/pdf")
-
-    with tab2:
-        card_back = generate_back(W_4K, H_4K)
-        st.image(card_back)
-        buf_back = io.BytesIO()
-        card_back.save(buf_back, format="PDF")
-        buf_back.seek(0)
-        st.download_button("📥 Download Back PDF", data=buf_back, file_name="tray_card_back.pdf", mime="application/pdf")
