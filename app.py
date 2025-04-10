@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 import os
 
 # === Constants ===
@@ -30,7 +30,7 @@ def load_img(path, size=None):
         raise FileNotFoundError(f"Image not found: {path}")
     img = Image.open(path).convert("RGBA")
     if size:
-        img = img.resize(size, Image.ANTIALIAS)
+        img = img.resize(size, Image.LANCZOS)
     return img
 
 def text_size(draw, text, font):
