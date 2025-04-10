@@ -90,10 +90,10 @@ email = st.text_input("Email", "")
 phone = st.text_input("Phone", "")
 
 fonts = {
-    "ar_bold": load_font(..., 96),
-    "en_bold": load_font(..., 96),
-    "ar_regular": load_font(..., 72),
-    "en_regular": load_font(..., 72),
+    "ar_bold": load_font("assets/fonts/NotoSansArabic-SemiBold.ttf", 144),
+    "ar_regular": load_font("assets/fonts/NotoSansArabic-Regular.ttf", 96),
+    "en_bold": load_font("assets/fonts/PlusJakartaSans-Bold.ttf", 144),
+    "en_regular": load_font("assets/fonts/PlusJakartaSans-Regular.ttf", 96),
 }
 
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
