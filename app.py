@@ -105,17 +105,21 @@ fonts = {
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
     tab1, tab2 = st.tabs(["Front Face", "Back Face"])
 
+with tab1:
+    card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
+    card_back = generate_back(W_4K, H_4K)
 
-    with tab1:
-        card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
-        card_back = generate_back(W_4K, H_4K)
+    # Display only front face
+    st.image(card_image)
 
-        st.image(card_image, caption="Front")
-        st.image(card_back, caption="Back")
+    # Create combined PDF
+    combined_buf = io.BytesIO()
+    card_image.save(combined_buf, format="PDF", save_all=True, append_images=[card_back])
+    combined_buf.seek(0)
 
-        # Combine both in one PDF
-        pdf_buf = io.BytesIO()
-        card_image.save(pdf_buf, format="PDF", save_all=True, append_images=[card_back])
-        pdf_buf.seek(0)
-
-        st.download_button("📥 Download Front + Back PDF", data=pdf_buf, file_name="tray_card_combined.pdf", mime="application/pdf")
+    st.download_button(
+        "📥 Download Front + Back PDF",
+        data=combined_buf,
+        file_name="tray_card_combined.pdf",
+        mime="application/pdf"
+    )
