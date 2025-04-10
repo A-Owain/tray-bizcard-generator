@@ -113,6 +113,20 @@ if all([ar_name, ar_title, en_name, en_title, email, phone]):
         buf_front.seek(0)
         st.download_button("📥 Download Front PDF (4K)", data=buf_front, file_name="tray_card_4K.pdf", mime="application/pdf")
 
+    with tab1:
+        card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
+        card_back = generate_back(W_4K, H_4K)
+
+        st.image(card_image, caption="Front")
+        st.image(card_back, caption="Back")
+
+        # Combine both in one PDF
+        pdf_buf = io.BytesIO()
+        card_image.save(pdf_buf, format="PDF", save_all=True, append_images=[card_back])
+        pdf_buf.seek(0)
+
+        st.download_button("📥 Download Front + Back PDF", data=pdf_buf, file_name="tray_card_combined.pdf", mime="application/pdf")
+
     with tab2:
         card_back = generate_back(W_4K, H_4K)
         st.image(card_back)
