@@ -103,7 +103,7 @@ fonts = {
 }
 
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
-    tab1, tab2 = st.tabs(["Front Face"])
+    tab1, tab2 = st.tabs(["Front Facem", "Back Facem"])
 
 with tab1:
     card_image = generate_front(W_4K, H_4K, fonts, ar_name, ar_title, en_name, en_title, email, phone)
