@@ -8,7 +8,7 @@ import os
 
 # Constants
 BASE_W, BASE_H = 3840, 2160
-SCALE = 2
+SCALE = 4
 W, H = BASE_W * SCALE, BASE_H * SCALE
 MARGIN = 150 * SCALE
 QR_SIZE = 600 * SCALE
@@ -87,10 +87,10 @@ email = st.text_input("Email", "")
 phone = st.text_input("Phone", "")
 
 fonts = {
-    "ar_bold": load_font(FONT_AR_BOLD, 144),
-    "ar_regular": load_font(FONT_AR_REGULAR, 96),
-    "en_bold": load_font(FONT_EN_BOLD, 144),
-    "en_regular": load_font(FONT_EN_REGULAR, 96),
+    "ar_bold": load_font(FONT_AR_BOLD, 144 * SCALE),
+    "ar_regular": load_font(FONT_AR_REGULAR, 96 * SCALE),
+    "en_bold": load_font(FONT_EN_BOLD, 144 * SCALE),
+    "en_regular": load_font(FONT_EN_REGULAR, 96 * SCALE),
 }
 
 if all([ar_name, ar_title, en_name, en_title, email, phone]):
@@ -105,8 +105,8 @@ if all([ar_name, ar_title, en_name, en_title, email, phone]):
         combined_buf.seek(0)
 
         st.download_button(
-            "📥 Download Front + Back PDF (High Quality)",
+            "📥 Download Front + Back PDF (Crisp Raster)",
             data=combined_buf,
-            file_name="tray_card_highres.pdf",
+            file_name="tray_card_superclear.pdf",
             mime="application/pdf"
         )
